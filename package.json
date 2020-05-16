@@ -1,0 +1,11 @@
+{
+  "name": "birthday-notifier",
+  "version": "1.0.0",
+  "description": "API Server & Scheduler to handle notifying an email of their Google contacts birthday",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aaron Mast",
+  "license": "MIT"
+}
