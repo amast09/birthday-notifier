@@ -2,10 +2,19 @@
   "name": "birthday-notifier",
   "version": "1.0.0",
   "description": "API Server & Scheduler to handle notifying an email of their Google contacts birthday",
-  "main": "index.js",
+  "main": "dist/api.js",
   "scripts": {
+    "start": "tsc && node dist/api.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Aaron Mast",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "koa": "^2.11.0"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.11.3",
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.2"
+  }
 }
