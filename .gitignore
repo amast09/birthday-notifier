@@ -1,3 +1,5 @@
 node_modules
 dist
 .idea
+.env
+google-people-api-credentials.json
