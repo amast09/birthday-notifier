@@ -1,11 +1,17 @@
 import sendGridMailer from "@sendgrid/mail";
 import logger from "./logger";
 import { NameWithBirthday } from "./types/BirthdayProvider";
-import ENVIRONMENT, {EnvironmentKey} from "./environment";
+import ENVIRONMENT, { EnvironmentKey } from "./environment";
 
 const BIRTHDAY_NOTIFICATION_SUBJECT = "Birthday Notifications for the Day";
 
 sendGridMailer.setApiKey(ENVIRONMENT[EnvironmentKey.SEND_GRID_API_KEY]);
+
+export interface Emailer {
+  readonly sendBirthdayNotificationEmail: (
+    params: BirthdayNotificationEmailParams
+  ) => Promise<void>;
+}
 
 interface BirthdayNotificationEmailParams {
   readonly emailAddress: string;
@@ -37,4 +43,6 @@ const sendBirthdayNotificationEmail = async (
   }
 };
 
-export default { sendBirthdayNotificationEmail };
+const emailer: Emailer = { sendBirthdayNotificationEmail }
+
+export default emailer;

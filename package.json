@@ -16,6 +16,8 @@
   "dependencies": {
     "@koa/router": "^8.0.8",
     "@sendgrid/mail": "^7.2.2",
+    "@types/cron": "^1.7.2",
+    "cron": "^1.8.2",
     "dotenv": "^8.2.0",
     "fp-ts": "^2.6.1",
     "googleapis": "^51.0.0",
