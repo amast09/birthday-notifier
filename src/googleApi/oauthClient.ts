@@ -64,14 +64,14 @@ const saveClientCredentialsForToken = async (
       return { userEmail: tokenInfo.email };
     } else {
       const error = new Error(
-        "Unable to find to sub id for user in oauth credentials token info"
+        "Unable to get email in oauth credential's token info"
       );
       logger.error(error);
       throw error;
     }
   } else {
     const error = new Error(
-      "Unable to find to find access token in oauth credentials"
+      "Unable to get access token from oauth credentials"
     );
     logger.error(error);
     throw error;
