@@ -9,6 +9,9 @@
   },
   "author": "Aaron Mast",
   "license": "MIT",
+  "engines": {
+    "node": "12.18.3"
+  },
   "dependencies": {
     "dotenv": "^8.2.0",
     "fp-ts": "^2.6.1",
