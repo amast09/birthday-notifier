@@ -1,5 +1,4 @@
 import Application from "koa";
-import dotenv from "dotenv";
 import Koa from "koa";
 import Router from "@koa/router";
 import googleOauthClient from "./googleApi/oauthClient";
@@ -7,10 +6,7 @@ import HTTP_STATUS from "http-status-codes";
 import InMemorySubscriberStorage from "./InMemorySubscriberStorage";
 import GoogleContactProvider from "./googleApi/birthdayProvider";
 import { google } from "googleapis";
-
-if (process.env.NODE_ENV !== "production") {
-  dotenv.config();
-}
+import ENVIRONMENT, {EnvironmentKey} from "./environment";
 
 const app = new Koa();
 const router = new Router();
@@ -44,6 +40,10 @@ router.get("/birthdays", async (ctx: Application.BaseContext) => {
       );
       const peopleApi = google.people({ version: "v1", auth: oauthClient });
       const birthdays = await GoogleContactProvider(peopleApi)();
+      // await emailer.sendBirthdayNotificationEmail({
+      //   emailAddress: subscriber.emailAddress,
+      //   nameWithBirthdays: birthdays,
+      // });
       return { [subscriber.emailAddress]: birthdays };
     })
   );
@@ -53,4 +53,4 @@ router.get("/birthdays", async (ctx: Application.BaseContext) => {
 
 app.use(router.routes()).use(router.allowedMethods());
 
-app.listen(process.env.API_PORT);
+app.listen(ENVIRONMENT[EnvironmentKey.API_PORT]);

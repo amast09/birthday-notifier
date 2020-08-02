@@ -3,12 +3,13 @@ import { google } from "googleapis";
 import { Credentials } from "google-auth-library/build/src/auth/credentials";
 import logger from "../logger";
 import SubscriberStorage from "../types/SubscriberStorage";
+import ENVIRONMENT, { EnvironmentKey } from "../environment";
 
 const createOauthClient = () =>
   new google.auth.OAuth2(
-    process.env.GOOGLE_PEOPLE_API_CLIENT_ID,
-    process.env.GOOGLE_PEOPLE_API_CLIENT_SECRET,
-    process.env.GOOGLE_PEOPLE_API_REDIRECT_URL
+    ENVIRONMENT[EnvironmentKey.GOOGLE_PEOPLE_API_CLIENT_ID],
+    ENVIRONMENT[EnvironmentKey.GOOGLE_PEOPLE_API_CLIENT_SECRET],
+    ENVIRONMENT[EnvironmentKey.GOOGLE_PEOPLE_API_REDIRECT_URL]
   );
 
 const getAuthUrl = (): string => {

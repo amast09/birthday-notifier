@@ -1,4 +1,4 @@
-import { createLogger, format, transports } from "winston";
+import { createLogger, format } from "winston";
 
 const logger = createLogger({
   format: format.combine(
@@ -10,16 +10,5 @@ const logger = createLogger({
     format.json()
   ),
 });
-
-/*
- * If we're not in production then **ALSO** log to the `console` with the colorized simple format.
- */
-if (process.env.NODE_ENV !== "production") {
-  logger.add(
-    new transports.Console({
-      format: format.combine(format.colorize(), format.simple()),
-    })
-  );
-}
 
 export default logger;
