@@ -5,6 +5,7 @@
   "main": "dist/api.js",
   "scripts": {
     "start": "tsc && node dist/api.js",
+    "compile": "tsc",
     "test": "jest"
   },
   "author": "Aaron Mast",
