@@ -4,7 +4,7 @@ import Koa from "koa";
 import Router from "@koa/router";
 import googleOauthClient from "./googleApi/oauthClient";
 import HTTP_STATUS from "http-status-codes";
-import InMemorySubscriberStorage from "./InMemorySubscriberStorage";
+import FileSystemSubscriberStorage from "./FileSystemSubscriberStorage";
 import GoogleContactProvider from "./googleApi/birthdayProvider";
 import { google } from "googleapis";
 
@@ -25,7 +25,7 @@ router.get(
   async (ctx: Application.ExtendableContext) => {
     try {
       await googleOauthClient.saveClientCredentialsForToken({
-        storage: InMemorySubscriberStorage,
+        storage: FileSystemSubscriberStorage,
         tokenCode: ctx.query.code,
       });
       ctx.response.status = HTTP_STATUS.NO_CONTENT;
@@ -36,7 +36,7 @@ router.get(
 );
 
 router.get("/birthdays", async (ctx: Application.BaseContext) => {
-  const subscribers = await InMemorySubscriberStorage.getSubscribers();
+  const subscribers = await FileSystemSubscriberStorage.getSubscribers();
   const allBirthdays = await Promise.all(
     subscribers.map(async (subscriber) => {
       const oauthClient = googleOauthClient.getOauthClientForCredentials(
