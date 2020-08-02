@@ -2,7 +2,7 @@ import Oauth2Client from "googleapis-common";
 import { google } from "googleapis";
 import { Credentials } from "google-auth-library/build/src/auth/credentials";
 import logger from "../logger";
-import OauthStorage from "../types/Storage";
+import SubscriberStorage from "../types/SubscriberStorage";
 
 const createOauthClient = () =>
   new google.auth.OAuth2(
@@ -16,7 +16,10 @@ const getAuthUrl = (): string => {
 
   return oAuthClient.generateAuthUrl({
     access_type: "offline",
-    scope: ["https://www.googleapis.com/auth/contacts.readonly", "openid"],
+    scope: [
+      "https://www.googleapis.com/auth/contacts.readonly",
+      "https://www.googleapis.com/auth/userinfo.email",
+    ],
   });
 };
 
@@ -35,12 +38,12 @@ const getOAuthClientCredentials = (tokenCode: string): Promise<Credentials> => {
 };
 
 interface SaveClientCredentialsResult {
-  readonly userId: string;
+  readonly userEmail: string;
 }
 
 interface SaveClientCredentialsParams {
   readonly tokenCode: string;
-  readonly storage: OauthStorage;
+  readonly storage: SubscriberStorage;
 }
 const saveClientCredentialsForToken = async (
   params: SaveClientCredentialsParams
@@ -52,9 +55,12 @@ const saveClientCredentialsForToken = async (
   if (credentials.access_token) {
     const tokenInfo = await oauthClient.getTokenInfo(credentials.access_token);
 
-    if (tokenInfo.sub) {
-      await storage.saveOauthCredentials(tokenInfo.sub, credentials);
-      return { userId: tokenInfo.sub };
+    if (tokenInfo.email) {
+      await storage.saveSubscriber({
+        emailAddress: tokenInfo.email,
+        oauthCredentials: credentials,
+      });
+      return { userEmail: tokenInfo.email };
     } else {
       const error = new Error(
         "Unable to find to sub id for user in oauth credentials token info"
@@ -79,21 +85,8 @@ const getOauthClientForCredentials = (
   return oauthClient;
 };
 
-interface GetAllOauthCredentialsParams {
-  readonly storage: OauthStorage;
-}
-
-const getAllOauthClients = async (
-  params: GetAllOauthCredentialsParams
-): Promise<Oauth2Client.OAuth2Client[]> => {
-  const credentials = await params.storage.getOauthCredentials();
-  return Promise.all(
-    credentials.map(getOauthClientForCredentials)
-  );
-};
-
 export default {
   saveClientCredentialsForToken,
   getAuthUrl,
-  getAllOauthClients,
+  getOauthClientForCredentials,
 };

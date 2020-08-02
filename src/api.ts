@@ -4,10 +4,9 @@ import Koa from "koa";
 import Router from "@koa/router";
 import googleOauthClient from "./googleApi/oauthClient";
 import HTTP_STATUS from "http-status-codes";
-import InMemoryOauthStorage from "./InMemoryOauthStorage";
+import InMemorySubscriberStorage from "./InMemorySubscriberStorage";
 import GoogleContactProvider from "./googleApi/birthdayProvider";
 import { google } from "googleapis";
-import { flatten } from "fp-ts/lib/Array";
 
 if (process.env.NODE_ENV !== "production") {
   dotenv.config();
@@ -24,35 +23,32 @@ router.get("/subscribe", async (ctx: Application.BaseContext) => {
 router.get(
   "/google-oauth-callback",
   async (ctx: Application.ExtendableContext) => {
-    const saveCredentialsPromise = googleOauthClient.saveClientCredentialsForToken(
-      {
-        storage: InMemoryOauthStorage,
+    try {
+      await googleOauthClient.saveClientCredentialsForToken({
+        storage: InMemorySubscriberStorage,
         tokenCode: ctx.query.code,
-      }
-    );
-
-    saveCredentialsPromise
-      .then(() => {
-        ctx.response.status = HTTP_STATUS.NO_CONTENT;
-      })
-      .catch(() => {
-        ctx.response.status = HTTP_STATUS.FAILED_DEPENDENCY;
       });
+      ctx.response.status = HTTP_STATUS.NO_CONTENT;
+    } catch (_) {
+      ctx.response.status = HTTP_STATUS.FAILED_DEPENDENCY;
+    }
   }
 );
 
 router.get("/birthdays", async (ctx: Application.BaseContext) => {
-  const oauthClients = await googleOauthClient.getAllOauthClients({
-    storage: InMemoryOauthStorage,
-  });
-  const futureAllBirthdays = Promise.all(
-    oauthClients
-      .map((oauthClient) => google.people({ version: "v1", auth: oauthClient }))
-      .map(GoogleContactProvider)
-      .map((getBirthdays) => getBirthdays())
+  const subscribers = await InMemorySubscriberStorage.getSubscribers();
+  const allBirthdays = await Promise.all(
+    subscribers.map(async (subscriber) => {
+      const oauthClient = googleOauthClient.getOauthClientForCredentials(
+        subscriber.oauthCredentials
+      );
+      const peopleApi = google.people({ version: "v1", auth: oauthClient });
+      const birthdays = await GoogleContactProvider(peopleApi)();
+      return { [subscriber.emailAddress]: birthdays };
+    })
   );
-  const allBirthdays = flatten(await futureAllBirthdays);
-  ctx.body = { namesWithBirthdays: allBirthdays };
+
+  ctx.body = { subscribers: allBirthdays };
 });
 
 app.use(router.routes()).use(router.allowedMethods());
