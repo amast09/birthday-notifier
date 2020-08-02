@@ -3,7 +3,7 @@ import { Credentials } from "google-auth-library/build/src/auth/credentials";
 
 const IN_MEMORY_DB: Record<string, Credentials> = {};
 
-const InMemorySubscriberStorage: SubscriberStorage = {
+const inMemorySubscriberStorage: SubscriberStorage = {
   getSubscribers: () =>
     new Promise((resolve) =>
       resolve(
@@ -20,4 +20,4 @@ const InMemorySubscriberStorage: SubscriberStorage = {
     }),
 };
 
-export default InMemorySubscriberStorage;
+export default inMemorySubscriberStorage;

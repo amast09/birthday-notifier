@@ -3,7 +3,7 @@ import Koa from "koa";
 import Router from "@koa/router";
 import googleOauthClient from "./googleApi/oauthClient";
 import HTTP_STATUS from "http-status-codes";
-import InMemorySubscriberStorage from "./InMemorySubscriberStorage";
+import inMemorySubscriberStorage from "./inMemorySubscriberStorage";
 import GoogleContactProvider from "./googleApi/birthdayProvider";
 import { google } from "googleapis";
 import ENVIRONMENT, {EnvironmentKey} from "./environment";
@@ -21,7 +21,7 @@ router.get(
   async (ctx: Application.ExtendableContext) => {
     try {
       await googleOauthClient.saveClientCredentialsForToken({
-        storage: InMemorySubscriberStorage,
+        storage: inMemorySubscriberStorage,
         tokenCode: ctx.query.code,
       });
       ctx.response.status = HTTP_STATUS.NO_CONTENT;
@@ -32,7 +32,7 @@ router.get(
 );
 
 router.get("/birthdays", async (ctx: Application.BaseContext) => {
-  const subscribers = await InMemorySubscriberStorage.getSubscribers();
+  const subscribers = await inMemorySubscriberStorage.getSubscribers();
   const allBirthdays = await Promise.all(
     subscribers.map(async (subscriber) => {
       const oauthClient = googleOauthClient.getOauthClientForCredentials(
