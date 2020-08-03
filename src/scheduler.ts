@@ -1,14 +1,16 @@
 import cron from "cron";
-
-// everyday at 8 am "0 8 * * *",
+import logger from "./logger";
 
 const start = (sendBirthdayNotificationEmails: () => Promise<void>): void => {
   cron.job(
-    "0 8 * * *",
+    "0 0 * * *",
     async function () {
+      logger.info("Kicking off Email Job");
       await sendBirthdayNotificationEmails();
     },
-    null,
+    () => {
+      logger.info("Email Job Complete");
+    },
     true
   );
 };

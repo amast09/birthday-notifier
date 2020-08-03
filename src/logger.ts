@@ -1,4 +1,4 @@
-import { createLogger, format } from "winston";
+import { createLogger, format, transports } from "winston";
 
 const logger = createLogger({
   format: format.combine(
@@ -9,6 +9,7 @@ const logger = createLogger({
     format.splat(),
     format.json()
   ),
+  transports: [new transports.Console()],
 });
 
 export default logger;

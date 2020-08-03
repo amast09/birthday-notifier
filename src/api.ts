@@ -4,11 +4,30 @@ import Router from "@koa/router";
 import googleOauthClient from "./googleApi/oauthClient";
 import HTTP_STATUS from "http-status-codes";
 import inMemorySubscriberStorage from "./inMemorySubscriberStorage";
-import ENVIRONMENT, { EnvironmentKey } from "./environment";
-import sendBirthdayEmailsForDay from "./sendBirthdayEmailsForDay";
+import logger from "./logger";
+import { DateTime, Interval } from "luxon";
 
-const app = new Koa();
+const api = new Koa();
 const router = new Router();
+
+api.use(async (ctx: Application.ExtendableContext, next) => {
+  const start = DateTime.fromJSDate(new Date());
+  await next();
+  const end = DateTime.fromJSDate(new Date());
+  const reqDuration = Interval.fromDateTimes(start, end).length("milliseconds");
+
+  let logLevel = "info";
+  if (ctx.status >= 500) {
+    logLevel = "error";
+  }
+  if (ctx.status >= 400) {
+    logLevel = "warn";
+  }
+
+  const msg = `${ctx.method} ${ctx.originalUrl} ${ctx.status} ${reqDuration}ms`;
+
+  logger.log(logLevel, msg);
+});
 
 router.get("/subscribe", async (ctx: Application.BaseContext) => {
   const googleAuthUrl = googleOauthClient.getAuthUrl();
@@ -30,12 +49,6 @@ router.get(
   }
 );
 
-router.get("/birthdays", async (ctx: Application.BaseContext) => {
-  sendBirthdayEmailsForDay();
+api.use(router.routes()).use(router.allowedMethods());
 
-  ctx.body = { foo: "bar" };
-});
-
-app.use(router.routes()).use(router.allowedMethods());
-
-app.listen(ENVIRONMENT[EnvironmentKey.API_PORT]);
+export default api;

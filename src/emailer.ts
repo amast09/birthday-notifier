@@ -2,6 +2,7 @@ import sendGridMailer from "@sendgrid/mail";
 import logger from "./logger";
 import { NameWithBirthday } from "./types/BirthdayProvider";
 import ENVIRONMENT, { EnvironmentKey } from "./environment";
+import { DateTime } from "luxon";
 
 const BIRTHDAY_NOTIFICATION_SUBJECT = "Birthday Notifications for the Day";
 
@@ -24,11 +25,12 @@ const sendBirthdayNotificationEmail = async (
   const birthdayTextList = params.nameWithBirthdays
     .map(
       (nameAndBirthday) =>
-        `${nameAndBirthday.name} ${nameAndBirthday.birthday.toFormat(
-          "MM/D/YYYY"
+        `${nameAndBirthday.name} ${nameAndBirthday.birthday.toLocaleString(
+          DateTime.DATETIME_HUGE_WITH_SECONDS
         )}`
     )
     .join("\n");
+
   const email = {
     to: params.emailAddress,
     from: ENVIRONMENT[EnvironmentKey.FROM_EMAIL_ADDRESS],
@@ -39,10 +41,12 @@ const sendBirthdayNotificationEmail = async (
   try {
     await sendGridMailer.send(email);
   } catch (error) {
-    logger.error("failed to send birthday notification email", email, error);
+    logger.error("Failed to send birthday notification email");
+    logger.error(email);
+    logger.error(error);
   }
 };
 
-const emailer: Emailer = { sendBirthdayNotificationEmail }
+const emailer: Emailer = { sendBirthdayNotificationEmail };
 
 export default emailer;

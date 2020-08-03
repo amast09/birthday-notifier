@@ -32,6 +32,9 @@ const googleDateToNativeDate = (
           year: googleDate.year || 1991,
           month: googleDate.month,
           day: googleDate.day,
+          hour: 0,
+          minute: 0,
+          second: 0,
         })
       )
     : none;
