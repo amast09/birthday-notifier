@@ -13,6 +13,8 @@ import { pipe } from "fp-ts/lib/pipeable";
 import { DateTime } from "luxon";
 import { GaxiosResponse } from "gaxios";
 import BirthdayProvider, { NameWithBirthday } from "../types/BirthdayProvider";
+import { Subscriber } from "../types/SubscriberStorage";
+import logger from "../logger";
 
 const GOOGLE_PEOPLE_CONNECTIONS_LIST_OPTIONS = Object.freeze({
   resourceName: "people/me",
@@ -57,36 +59,45 @@ const getNameFromPerson = (person: people_v1.Schema$Person): Option<string> =>
   );
 
 const birthdayProvider = (
-  peopleApi: people_v1.People
-): BirthdayProvider => () =>
-  peopleApi.people.connections
-    .list(GOOGLE_PEOPLE_CONNECTIONS_LIST_OPTIONS)
-    .then<NameWithBirthday[]>(
-      (res: GaxiosResponse<people_v1.Schema$ListConnectionsResponse>) => {
-        const connections: people_v1.Schema$Person[] =
-          res.data.connections || EMPTY_PERSON_SCHEMA_ARRAY;
+  getPeopleApiForSubscriber: (subscriber: Subscriber) => people_v1.People
+): BirthdayProvider => ({
+  getBirthdaysForSubscriber: (subscriber: Subscriber) =>
+    getPeopleApiForSubscriber(subscriber)
+      .people.connections.list(GOOGLE_PEOPLE_CONNECTIONS_LIST_OPTIONS)
+      .then<NameWithBirthday[]>(
+        (res: GaxiosResponse<people_v1.Schema$ListConnectionsResponse>) => {
+          const connections: people_v1.Schema$Person[] =
+            res.data.connections || EMPTY_PERSON_SCHEMA_ARRAY;
 
-        return connections.reduce<NameWithBirthday[]>(
-          (acc: NameWithBirthday[], person: people_v1.Schema$Person) => {
-            const maybeBirthday = getBirthdayFromPerson(person);
-            const maybeName = getNameFromPerson(person);
+          return connections.reduce<NameWithBirthday[]>(
+            (acc: NameWithBirthday[], person: people_v1.Schema$Person) => {
+              const maybeBirthday = getBirthdayFromPerson(person);
+              const maybeName = getNameFromPerson(person);
 
-            const maybeNameWithBirthday: Option<NameWithBirthday> = chain(
-              (name: string) =>
-                mapOption((birthday: DateTime) => ({ name, birthday }))(
-                  maybeBirthday
-                )
-            )(maybeName);
+              const maybeNameWithBirthday: Option<NameWithBirthday> = chain(
+                (name: string) =>
+                  mapOption((birthday: DateTime) => ({ name, birthday }))(
+                    maybeBirthday
+                  )
+              )(maybeName);
 
-            return fold(
-              () => acc,
-              (nameWithBirthday: NameWithBirthday) =>
-                acc.concat(nameWithBirthday)
-            )(maybeNameWithBirthday);
-          },
-          EMPTY_NAME_WITH_BDAY_ARRAY
+              return fold(
+                () => acc,
+                (nameWithBirthday: NameWithBirthday) =>
+                  acc.concat(nameWithBirthday)
+              )(maybeNameWithBirthday);
+            },
+            EMPTY_NAME_WITH_BDAY_ARRAY
+          );
+        }
+      )
+      .catch((e) => {
+        logger.error(
+          `Failed to list connections for ${subscriber.emailAddress}`
         );
-      }
-    );
+        logger.error(e);
+        throw e;
+      }),
+});
 
 export default birthdayProvider;

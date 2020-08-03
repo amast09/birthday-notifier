@@ -2,8 +2,9 @@ import Oauth2Client from "googleapis-common";
 import { google } from "googleapis";
 import { Credentials } from "google-auth-library/build/src/auth/credentials";
 import logger from "../logger";
-import SubscriberStorage from "../types/SubscriberStorage";
+import SubscriberStorage, { Subscriber } from "../types/SubscriberStorage";
 import ENVIRONMENT, { EnvironmentKey } from "../environment";
+import { people_v1 } from "googleapis/build/src/apis/people/v1";
 
 const createOauthClient = () =>
   new google.auth.OAuth2(
@@ -22,6 +23,14 @@ const getAuthUrl = (): string => {
       "https://www.googleapis.com/auth/userinfo.email",
     ],
   });
+};
+
+const getOauthClientForCredentials = (
+    credentials: Credentials
+): Oauth2Client.OAuth2Client => {
+  const oauthClient = createOauthClient();
+  oauthClient.setCredentials(credentials);
+  return oauthClient;
 };
 
 const getOAuthClientCredentials = (tokenCode: string): Promise<Credentials> => {
@@ -46,6 +55,7 @@ interface SaveClientCredentialsParams {
   readonly tokenCode: string;
   readonly storage: SubscriberStorage;
 }
+
 const saveClientCredentialsForToken = async (
   params: SaveClientCredentialsParams
 ): Promise<SaveClientCredentialsResult> => {
@@ -78,16 +88,15 @@ const saveClientCredentialsForToken = async (
   }
 };
 
-const getOauthClientForCredentials = (
-  credentials: Credentials
-): Oauth2Client.OAuth2Client => {
-  const oauthClient = createOauthClient();
-  oauthClient.setCredentials(credentials);
-  return oauthClient;
+const getPeopleApiForSubscriber = (
+  subscriber: Subscriber
+): people_v1.People => {
+  const oauthClient = getOauthClientForCredentials(subscriber.oauthCredentials);
+  return google.people({ version: "v1", auth: oauthClient });
 };
 
 export default {
   saveClientCredentialsForToken,
   getAuthUrl,
-  getOauthClientForCredentials,
+  getPeopleApiForSubscriber,
 };

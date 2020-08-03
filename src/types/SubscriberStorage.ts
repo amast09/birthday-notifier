@@ -1,6 +1,6 @@
 import { Credentials } from "google-auth-library/build/src/auth/credentials";
 
-interface Subscriber {
+export interface Subscriber {
   readonly emailAddress: string;
   readonly oauthCredentials: Credentials;
 }
