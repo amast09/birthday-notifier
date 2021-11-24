@@ -1,14 +1,13 @@
 name:                api
-version:             0.1.0.0
-github:              "githubuser/api"
-license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2021 Author name here"
+version:             0.0.1
+github:              "amast09/birthday-notifier/api"
+license:             MIT
+author:              "Aaron Mast"
+maintainer:          "amast09@gmail.com"
+copyright:           "2021 Aaron Mast"
 
 extra-source-files:
 - README.md
-- ChangeLog.md
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -17,10 +16,16 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/api#readme>
+description:         Please see the README on GitHub at <https://github.com/amast09/birthday-notifier/api#readme>
 
 dependencies:
 - base >= 4.7 && < 5
+- HTTP
+- http-types
+- http-client
+- http-client-tls
+- bytestring
+- aeson
 
 library:
   source-dirs: src
