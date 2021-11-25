@@ -1,24 +1,16 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+
+const CLIENT_ID = process.env.REACT_APP_GOOGLE_API_CLIENT_ID;
+const REDIRECT_URI = process.env.REACT_APP_GOOGLE_OAUTH_REDIRECT_URI;
+const SCOPES = "https://www.googleapis.com/auth/contacts.readonly";
+const OAUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&scope=${SCOPES}&access_type=offline&response_type=code&redirect_uri=${REDIRECT_URI}`;
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <a href={OAUTH_URL} target="_blank">
+        Get Birthday Notifications
+      </a>
     </div>
   );
 }
