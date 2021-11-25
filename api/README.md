@@ -1,9 +1,16 @@
 # api
 
-## Development
+## Getting Started
 
 ```shell
+# Setup Stack
+curl -sSL https://get.haskellstack.org/ | sh
+cd api/
 stack setup
+
+# Build the api
 stack build
-stack exec my-project-exe
+
+# Run the api
+stack exec api-exe
 ```
