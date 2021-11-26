@@ -11,17 +11,12 @@ import           Network.Wai
 import           Network.Wai.Handler.Warp
 import           Servant
 import           System.IO
-import Data.Time.Calendar
--- * api
 
-type UsersApi =
-  "users" :> Get '[JSON] [User] :<|>
-  "users" :> Capture "userId" Integer :> Get '[JSON] User
+type BirthdayNotifierApi =
+  "google-oauth-callback" :> QueryParam "code" String :> QueryParam "error" String :> Get '[JSON] OauthResult
 
-usersApi :: Proxy UsersApi
+usersApi :: Proxy BirthdayNotifierApi
 usersApi = Proxy
-
--- * app
 
 run :: IO ()
 run = do
@@ -35,36 +30,14 @@ run = do
 mkApp :: IO Application
 mkApp = return $ serve usersApi server
 
-server :: Server UsersApi
-server =
-  getUsers :<|>
-  getUserById
+server :: Server BirthdayNotifierApi
+server = handleOauthCallback
 
-getUsers :: Handler [User]
-getUsers = return allUsers
+handleOauthCallback :: Maybe String -> Maybe String -> Handler OauthResult
+handleOauthCallback (Just code) Nothing = return (OauthResult code)
+handleOauthCallback Nothing (Just error) = return (OauthResult error)
+handleOauthCallback _ _ = throwError err400
 
-getUserById :: Integer -> Handler User
-getUserById = \ case
-  372 -> return user1
-  136 -> return user2
-  _ -> throwError err404
+data OauthResult = OauthResult { result :: String } deriving (Eq, Show, Generic)
 
--- * user
-
-data User = User
-  { name :: String
-  , age :: Int
-  , email :: String
-  , registration_date :: Day
-  } deriving (Eq, Show, Generic)
-
-instance ToJSON User
-
-user1 :: User
-user1 = User "Isaac Newton"    372 "isaac@newton.co.uk" (fromGregorian 1683  3 1)
-
-user2 :: User
-user2 =  User "Albert Einstein" 136 "ae@mc2.org"         (fromGregorian 1905 12 1)
-
-allUsers :: [User]
-allUsers = [user1, user2]
+instance ToJSON OauthResult
