@@ -5,6 +5,7 @@
 module Api where
 
 import           Data.Aeson
+import           Data.Either
 import           GHC.Generics
 import           Network.Wai
 import           Network.Wai.Handler.Warp
@@ -37,13 +38,18 @@ server = handleOauthCallback
 handleOauthCallback :: Maybe String -> Maybe String -> Handler OAuthResult
 handleOauthCallback (Just code) Nothing = do
   rawResult <- liftIO (getOAuthCredentials code)
-  return (parseResult rawResult)
+  nextToken <- liftIO (getNextToken rawResult)
+  return (OAuthResult {result = nextToken})
 handleOauthCallback Nothing (Just e) = return (OAuthResult e)
 handleOauthCallback _ _ = throwError err400
 
 parseResult :: Either String OAuthTokenData -> OAuthResult
-parseResult (Right r) = OAuthResult {result = show r}
+parseResult (Right r) = OAuthResult {result = refreshToken r}
 parseResult (Left e) = OAuthResult {result = e}
+
+getNextToken :: Either String OAuthTokenData -> IO String
+getNextToken (Right r) = getNewAuthToken $ refreshToken r
+getNextToken _ = pure "foobar"
 
 newtype OAuthResult = OAuthResult {result :: String} deriving (Eq, Show, Generic)
 
