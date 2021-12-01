@@ -4,7 +4,7 @@ monorepo to handle notifying an email of their Google contacts birthday
 
 ### App
 
-- Get contacts via Google API
+- Parse Google contacts response
 - Store oauth credentials in a DB
 - Setup daily cron to just print "hello world"
   - https://hackage.haskell.org/package/cron
@@ -15,7 +15,6 @@ monorepo to handle notifying an email of their Google contacts birthday
 
 ### Dev
 
-- Add haskell formatter
 - Use .env for haskell
 - Configure tsconfig more strictly
 - Formatting

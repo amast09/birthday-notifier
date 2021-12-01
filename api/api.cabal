@@ -27,6 +27,7 @@ library
       AccessTokensResponse
       Api
       GoogleOAuth
+      GooglePeople
       Lib
       NewAccessTokenResponse
   other-modules:
