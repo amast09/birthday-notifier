@@ -4,7 +4,6 @@ monorepo to handle notifying an email of their Google contacts birthday
 
 ### App
 
-- Get new auth token with a refresh token
 - Get contacts via Google API
 - Store oauth credentials in a DB
 - Setup daily cron to just print "hello world"

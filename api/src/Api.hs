@@ -14,6 +14,8 @@ import           System.IO
 import Control.Monad.IO.Class
 
 import GoogleOAuth
+import AccessTokensResponse (AccessTokensResponse, refreshToken)
+import NewAccessTokenResponse (NewAccessTokenResponse, accessToken)
 
 type BirthdayNotifierApi =
   "google-oauth-callback" :> QueryParam "code" String :> QueryParam "error" String :> Get '[JSON] OAuthResult
@@ -37,19 +39,23 @@ server = handleOauthCallback
 
 handleOauthCallback :: Maybe String -> Maybe String -> Handler OAuthResult
 handleOauthCallback (Just code) Nothing = do
-  rawResult <- liftIO (getOAuthCredentials code)
+  rawResult <- liftIO (getAccessTokens code)
   nextToken <- liftIO (getNextToken rawResult)
-  return (OAuthResult {result = nextToken})
+  return (parseResult2 nextToken)
 handleOauthCallback Nothing (Just e) = return (OAuthResult e)
 handleOauthCallback _ _ = throwError err400
 
-parseResult :: Either String OAuthTokenData -> OAuthResult
-parseResult (Right r) = OAuthResult {result = refreshToken r}
-parseResult (Left e) = OAuthResult {result = e}
+parseResult1 :: Either String AccessTokensResponse -> OAuthResult
+parseResult1 (Right r) = OAuthResult {result = refreshToken r}
+parseResult1 (Left e) = OAuthResult {result = e}
 
-getNextToken :: Either String OAuthTokenData -> IO String
-getNextToken (Right r) = getNewAuthToken $ refreshToken r
-getNextToken _ = pure "foobar"
+parseResult2 :: Either String NewAccessTokenResponse -> OAuthResult
+parseResult2 (Right r) = OAuthResult {result = accessToken r}
+parseResult2 (Left e) = OAuthResult {result = e}
+
+getNextToken :: Either String AccessTokensResponse -> IO (Either String NewAccessTokenResponse)
+getNextToken (Right r) = getNewAccessToken $ refreshToken r
+getNextToken _ = pure (Left "foobar")
 
 newtype OAuthResult = OAuthResult {result :: String} deriving (Eq, Show, Generic)
 

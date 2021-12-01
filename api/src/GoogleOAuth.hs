@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module GoogleOAuth ( getOAuthCredentials, OAuthTokenData, getNewAuthToken, refreshToken ) where
+module GoogleOAuth ( getAccessTokens, getNewAccessToken ) where
 
 import           Data.Aeson
 import           Network.HTTP.Client
@@ -11,6 +11,8 @@ import           Network.HTTP.Types.Status  (statusCode)
 import GHC.Generics
 import Data.Aeson.Types (Parser)
 import System.Environment (getEnv)
+import AccessTokensResponse (AccessTokensResponse)
+import NewAccessTokenResponse (NewAccessTokenResponse)
 
 oauthUrl :: String
 oauthUrl = "https://oauth2.googleapis.com/token"
@@ -21,8 +23,8 @@ refreshTokenGrantType = "refresh_token"
 redirectUri :: String
 redirectUri = "http://localhost:3001/google-oauth-callback"
 
-getOAuthCredentials :: String -> IO (Either String OAuthTokenData)
-getOAuthCredentials code = do
+getAccessTokens :: String -> IO (Either String AccessTokensResponse)
+getAccessTokens code = do
   manager <- newManager tlsManagerSettings
   clientId <- getEnv "GOOGLE_OAUTH_CLIENT_ID"
   clientSecret <- getEnv "GOOGLE_OAUTH_CLIENT_SECRET"
@@ -46,22 +48,10 @@ getOAuthCredentials code = do
   print $ "Making request for refresh token to: " ++ oauthUrl
   print $ "Response status code: " ++ show (statusCode $ responseStatus response)
   print $ "Response body:" ++ show body
-  return (eitherDecode body :: Either String OAuthTokenData)
+  return (eitherDecode body :: Either String AccessTokensResponse)
 
-{-
-Example Response:
-{
-  "result": {
-    "access_token": "string",
-    "expires_in": 3599,
-    "scope": "https://www.googleapis.com/auth/contacts.readonly",
-    "token_type": "Bearer"
-  }
-}
--}
-
-getNewAuthToken :: String -> IO String
-getNewAuthToken oauthRefreshToken = do
+getNewAccessToken :: String -> IO (Either String NewAccessTokenResponse)
+getNewAccessToken oauthRefreshToken = do
   manager <- newManager tlsManagerSettings
   clientId <- getEnv "GOOGLE_OAUTH_CLIENT_ID"
   clientSecret <- getEnv "GOOGLE_OAUTH_CLIENT_SECRET"
@@ -84,29 +74,4 @@ getNewAuthToken oauthRefreshToken = do
   print $ "Making request to refresh oauth token to: " ++ oauthUrl
   print $ "Response status code: " ++ show (statusCode $ responseStatus response)
   print $ "Response body:" ++ show body
-  return (show body)
-
-
-data OAuthTokenData = OAuthTokenData {accessToken :: String
-  , expiresIn :: Int
-  , refreshToken :: String
-  , scope :: String
-  , tokenType :: String} deriving (Eq, Generic, Show)
-
-instance FromJSON OAuthTokenData where
-  parseJSON = withObject "OAuthTokenData" oAuthTokenDataParser
-
-oAuthTokenDataParser :: Object -> Parser OAuthTokenData
-oAuthTokenDataParser obj = do
-  parsedAccessToken <- obj .: "access_token"
-  parsedExpiresIn <- obj .: "expires_in"
-  parsedRefreshToken <- obj .: "refresh_token"
-  parsedScope <- obj .: "scope"
-  parsedTokenType <- obj .: "token_type"
-  return (OAuthTokenData {accessToken = parsedAccessToken
-    , expiresIn = parsedExpiresIn
-    , refreshToken = parsedRefreshToken
-    , scope = parsedScope
-    , tokenType = parsedTokenType})
-
-instance ToJSON OAuthTokenData
+  return (eitherDecode body :: Either String NewAccessTokenResponse)
