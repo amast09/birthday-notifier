@@ -1,25 +1,28 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedLists #-}
+{-# LANGUAGE OverloadedStrings #-}
 
-module GoogleOAuth ( getAccessTokens, getNewAccessToken ) where
+module GoogleOAuth (getAccessTokens, getNewAccessToken) where
 
-import           Data.Aeson
-import           Network.HTTP.Client
-import           Network.HTTP.Client.TLS
-import           Network.HTTP.Types.Status  (statusCode)
-import GHC.Generics
-import Data.Aeson.Types (Parser)
-import System.Environment (getEnv)
 import AccessTokensResponse (AccessTokensResponse)
+import Data.Aeson
+import Data.Aeson.Types (Parser)
+import GHC.Generics
+import Network.HTTP.Client
+import Network.HTTP.Client.TLS
+import Network.HTTP.Types.Status (statusCode)
 import NewAccessTokenResponse (NewAccessTokenResponse)
+import System.Environment (getEnv)
 
 oauthUrl :: String
 oauthUrl = "https://oauth2.googleapis.com/token"
+
 authCodeGrantType :: String
 authCodeGrantType = "authorization_code"
+
 refreshTokenGrantType :: String
 refreshTokenGrantType = "refresh_token"
+
 redirectUri :: String
 redirectUri = "http://localhost:3001/google-oauth-callback"
 
@@ -28,18 +31,20 @@ getAccessTokens code = do
   manager <- newManager tlsManagerSettings
   clientId <- getEnv "GOOGLE_OAUTH_CLIENT_ID"
   clientSecret <- getEnv "GOOGLE_OAUTH_CLIENT_SECRET"
-  let requestObject = object
-          [ "client_id" .= clientId
-          , "client_secret" .= clientSecret
-          , "code" .= code
-          , "grant_type" .= authCodeGrantType
-          , "redirect_uri" .= redirectUri
+  let requestObject =
+        object
+          [ "client_id" .= clientId,
+            "client_secret" .= clientSecret,
+            "code" .= code,
+            "grant_type" .= authCodeGrantType,
+            "redirect_uri" .= redirectUri
           ]
   initialRequest <- parseRequest oauthUrl
-  let request = initialRequest
-          { method = "POST"
-          , requestBody = RequestBodyLBS $ encode requestObject
-          , requestHeaders = [("Content-Type", "application/json; charset=utf-8")]
+  let request =
+        initialRequest
+          { method = "POST",
+            requestBody = RequestBodyLBS $ encode requestObject,
+            requestHeaders = [("Content-Type", "application/json; charset=utf-8")]
           }
 
   response <- httpLbs request manager
@@ -55,17 +60,19 @@ getNewAccessToken oauthRefreshToken = do
   manager <- newManager tlsManagerSettings
   clientId <- getEnv "GOOGLE_OAUTH_CLIENT_ID"
   clientSecret <- getEnv "GOOGLE_OAUTH_CLIENT_SECRET"
-  let requestObject = object
-          [ "client_id" .= clientId
-          , "client_secret" .= clientSecret
-          , "grant_type" .= refreshTokenGrantType
-          , "refresh_token" .= oauthRefreshToken
+  let requestObject =
+        object
+          [ "client_id" .= clientId,
+            "client_secret" .= clientSecret,
+            "grant_type" .= refreshTokenGrantType,
+            "refresh_token" .= oauthRefreshToken
           ]
   initialRequest <- parseRequest oauthUrl
-  let request = initialRequest
-          { method = "POST"
-          , requestBody = RequestBodyLBS $ encode requestObject
-          , requestHeaders = [("Content-Type", "application/json; charset=utf-8")]
+  let request =
+        initialRequest
+          { method = "POST",
+            requestBody = RequestBodyLBS $ encode requestObject,
+            requestHeaders = [("Content-Type", "application/json; charset=utf-8")]
           }
 
   response <- httpLbs request manager

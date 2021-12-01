@@ -4,18 +4,17 @@
 
 module Api where
 
-import           Data.Aeson
-import           Data.Either
-import           GHC.Generics
-import           Network.Wai
-import           Network.Wai.Handler.Warp
-import           Servant
-import           System.IO
-import Control.Monad.IO.Class
-
-import GoogleOAuth
 import AccessTokensResponse (AccessTokensResponse, refreshToken)
+import Control.Monad.IO.Class
+import Data.Aeson
+import Data.Either
+import GHC.Generics
+import GoogleOAuth
+import Network.Wai
+import Network.Wai.Handler.Warp
 import NewAccessTokenResponse (NewAccessTokenResponse, accessToken)
+import Servant
+import System.IO
 
 type BirthdayNotifierApi =
   "google-oauth-callback" :> QueryParam "code" String :> QueryParam "error" String :> Get '[JSON] OAuthResult
@@ -28,7 +27,7 @@ run = do
   let port = 3001
       settings =
         setPort port $
-        setBeforeMainLoop (hPutStrLn stderr ("listening on port " ++ show port)) defaultSettings
+          setBeforeMainLoop (hPutStrLn stderr ("listening on port " ++ show port)) defaultSettings
   runSettings settings =<< mkApp
 
 mkApp :: IO Application

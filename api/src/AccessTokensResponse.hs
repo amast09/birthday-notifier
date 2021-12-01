@@ -1,18 +1,21 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
-module AccessTokensResponse ( AccessTokensResponse, refreshToken ) where
+module AccessTokensResponse (AccessTokensResponse, refreshToken) where
 
+import Data.Aeson
 import GHC.Generics
-import           Data.Aeson
 
-data AccessTokensResponse = AccessTokensResponse {accessToken :: String
-  , expiresIn :: Int
-  , refreshToken :: String
-  , scope :: String
-  , tokenType :: String} deriving (Eq, Generic, Show)
+data AccessTokensResponse = AccessTokensResponse
+  { accessToken :: String,
+    expiresIn :: Int,
+    refreshToken :: String,
+    scope :: String,
+    tokenType :: String
+  }
+  deriving (Eq, Generic, Show)
 
 instance FromJSON AccessTokensResponse where
-    parseJSON = genericParseJSON defaultOptions { fieldLabelModifier = camelTo2 '_' }
+  parseJSON = genericParseJSON defaultOptions {fieldLabelModifier = camelTo2 '_'}
 
 instance ToJSON AccessTokensResponse
