@@ -26,6 +26,8 @@ library
   exposed-modules:
       AccessTokensResponse
       Api
+      ConnectionsResponse
+      Contact
       GoogleOAuth
       GooglePeople
       Lib

@@ -10,15 +10,16 @@ import Data.Aeson
 import Data.Either
 import GHC.Generics
 import GoogleOAuth
-import GooglePeople (getContacts)
+import GooglePeople (getConnections)
 import Network.Wai
 import Network.Wai.Handler.Warp
 import NewAccessTokenResponse (NewAccessTokenResponse, accessToken)
 import Servant
 import System.IO
+import ConnectionsResponse (ConnectionsResponse, connections)
 
 type BirthdayNotifierApi =
-  "google-oauth-callback" :> QueryParam "code" String :> QueryParam "error" String :> Get '[JSON] ()
+  "google-oauth-callback" :> QueryParam "code" String :> QueryParam "error" String :> Get '[JSON] HandlerResult
 
 usersApi :: Proxy BirthdayNotifierApi
 usersApi = Proxy
@@ -37,31 +38,35 @@ mkApp = return $ serve usersApi server
 server :: Server BirthdayNotifierApi
 server = handleOauthCallback
 
-handleOauthCallback :: Maybe String -> Maybe String -> Handler ()
+handleOauthCallback :: Maybe String -> Maybe String -> Handler (HandlerResult)
 handleOauthCallback (Just code) Nothing = do
   rawResult <- liftIO (getAccessTokens code)
   nextToken <- liftIO (getNextToken rawResult)
-  liftIO $ makeContactsRequest nextToken
---  return (parseResult2 nextToken)
-handleOauthCallback Nothing (Just e) = return ()
+  contacts <- liftIO (makeContactsRequest nextToken)
+  return (parseResult3 contacts)
+handleOauthCallback Nothing (Just e) = return HandlerResult {result = e}
 handleOauthCallback _ _ = throwError err400
 
-parseResult1 :: Either String AccessTokensResponse -> OAuthResult
-parseResult1 (Right r) = OAuthResult {result = refreshToken r}
-parseResult1 (Left e) = OAuthResult {result = e}
+parseResult1 :: Either String AccessTokensResponse -> HandlerResult
+parseResult1 (Right r) = HandlerResult {result = refreshToken r}
+parseResult1 (Left e) = HandlerResult {result = e}
 
-parseResult2 :: Either String NewAccessTokenResponse -> OAuthResult
-parseResult2 (Right r) = OAuthResult {result = accessToken r}
-parseResult2 (Left e) = OAuthResult {result = e}
+parseResult2 :: Either String NewAccessTokenResponse -> HandlerResult
+parseResult2 (Right r) = HandlerResult {result = accessToken r}
+parseResult2 (Left e) = HandlerResult {result = e}
+
+parseResult3 :: Either String ConnectionsResponse -> HandlerResult
+parseResult3 (Right r) = HandlerResult {result = (show r)}
+parseResult3 (Left e) = HandlerResult {result = e}
 
 getNextToken :: Either String AccessTokensResponse -> IO (Either String NewAccessTokenResponse)
 getNextToken (Right r) = getNewAccessToken $ refreshToken r
-getNextToken _ = pure (Left "foobar")
+getNextToken (Left l) = pure (Left l)
 
-makeContactsRequest :: Either String NewAccessTokenResponse -> IO ()
-makeContactsRequest (Right r) = getContacts $ accessToken r
-makeContactsRequest _ = pure ()
+makeContactsRequest :: Either String NewAccessTokenResponse -> IO (Either String ConnectionsResponse)
+makeContactsRequest (Right r) = getConnections $ accessToken r
+makeContactsRequest (Left l) = pure (Left l)
 
-newtype OAuthResult = OAuthResult {result :: String} deriving (Eq, Show, Generic)
+newtype HandlerResult = HandlerResult {result :: String} deriving (Eq, Show, Generic)
 
-instance ToJSON OAuthResult
+instance ToJSON HandlerResult
