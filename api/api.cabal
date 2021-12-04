@@ -30,7 +30,6 @@ library
       Contact
       GoogleOAuth
       GooglePeople
-      Lib
       NewAccessTokenResponse
   other-modules:
       Paths_api

@@ -17,6 +17,7 @@ import NewAccessTokenResponse (NewAccessTokenResponse, accessToken)
 import Servant
 import System.IO
 import ConnectionsResponse (ConnectionsResponse, connections)
+import Contact (contactsFromConnectionsResponse)
 
 type BirthdayNotifierApi =
   "google-oauth-callback" :> QueryParam "code" String :> QueryParam "error" String :> Get '[JSON] HandlerResult
@@ -38,7 +39,7 @@ mkApp = return $ serve usersApi server
 server :: Server BirthdayNotifierApi
 server = handleOauthCallback
 
-handleOauthCallback :: Maybe String -> Maybe String -> Handler (HandlerResult)
+handleOauthCallback :: Maybe String -> Maybe String -> Handler HandlerResult
 handleOauthCallback (Just code) Nothing = do
   rawResult <- liftIO (getAccessTokens code)
   nextToken <- liftIO (getNextToken rawResult)
@@ -56,7 +57,7 @@ parseResult2 (Right r) = HandlerResult {result = accessToken r}
 parseResult2 (Left e) = HandlerResult {result = e}
 
 parseResult3 :: Either String ConnectionsResponse -> HandlerResult
-parseResult3 (Right r) = HandlerResult {result = (show r)}
+parseResult3 (Right r) = HandlerResult {result = show (length $ contactsFromConnectionsResponse r)}
 parseResult3 (Left e) = HandlerResult {result = e}
 
 getNextToken :: Either String AccessTokensResponse -> IO (Either String NewAccessTokenResponse)
