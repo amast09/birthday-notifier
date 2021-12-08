@@ -5,6 +5,8 @@
 module Api where
 
 import AccessTokensResponse (AccessTokensResponse, refreshToken)
+import ConnectionsResponse (ConnectionsResponse, connections)
+import Contact (contactsFromConnectionsResponse)
 import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Either
@@ -14,10 +16,9 @@ import GooglePeople (getConnections)
 import Network.Wai
 import Network.Wai.Handler.Warp
 import NewAccessTokenResponse (NewAccessTokenResponse, accessToken)
+import SendGrid as SG
 import Servant
 import System.IO
-import ConnectionsResponse (ConnectionsResponse, connections)
-import Contact (contactsFromConnectionsResponse)
 
 type BirthdayNotifierApi =
   "google-oauth-callback" :> QueryParam "code" String :> QueryParam "error" String :> Get '[JSON] HandlerResult
@@ -44,6 +45,15 @@ handleOauthCallback (Just code) Nothing = do
   rawResult <- liftIO (getAccessTokens code)
   nextToken <- liftIO (getNextToken rawResult)
   contacts <- liftIO (makeContactsRequest nextToken)
+  _ <-
+    liftIO
+      ( sendEmail
+          SG.SendEmailParams
+            { SG.emailSubject = "Today's Birthdays!",
+              SG.emailContent = "test",
+              SG.emailToAddress = "amast09@gmail.com"
+            }
+      )
   return (parseResult3 contacts)
 handleOauthCallback Nothing (Just e) = return HandlerResult {result = e}
 handleOauthCallback _ _ = throwError err400

@@ -4,12 +4,12 @@
 
 module GooglePeople (getConnections) where
 
+import ConnectionsResponse
 import Data.Aeson
 import Data.ByteString.Char8
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import Network.HTTP.Types.Status (statusCode)
-import ConnectionsResponse
 
 peopleUrl :: String
 peopleUrl = "https://people.googleapis.com/v1/people/me/connections"
