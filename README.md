@@ -4,8 +4,6 @@ monorepo to handle notifying an email of their Google contacts birthday
 
 ### App
 
-- Send an email via send grid
-- Send an email based on birthday data
 - Store oauth credentials in a DB
 - Setup daily cron to just print "hello world"
   - https://hackage.haskell.org/package/cron

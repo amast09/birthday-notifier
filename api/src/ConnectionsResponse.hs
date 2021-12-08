@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module ConnectionsResponse (Connection, ConnectionsResponse, Day, connections, names, birthdays, displayName, date) where
+module ConnectionsResponse (Connection, ConnectionsResponse, Day (..), connections, names, birthdays, displayName, date) where
 
 import Data.Aeson
 import GHC.Generics

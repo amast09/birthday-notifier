@@ -6,10 +6,11 @@ module Api where
 
 import AccessTokensResponse (AccessTokensResponse, refreshToken)
 import ConnectionsResponse (ConnectionsResponse, connections)
-import Contact (contactsFromConnectionsResponse)
+import Contact (Contact, contactsFromConnectionsResponse, createBirthdayEmailMessage, name)
 import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Either
+import Data.Time.Clock
 import GHC.Generics
 import GoogleOAuth
 import GooglePeople (getConnections)
@@ -42,33 +43,35 @@ server = handleOauthCallback
 
 handleOauthCallback :: Maybe String -> Maybe String -> Handler HandlerResult
 handleOauthCallback (Just code) Nothing = do
-  rawResult <- liftIO (getAccessTokens code)
-  nextToken <- liftIO (getNextToken rawResult)
-  contacts <- liftIO (makeContactsRequest nextToken)
-  _ <-
-    liftIO
-      ( sendEmail
-          SG.SendEmailParams
-            { SG.emailSubject = "Today's Birthdays!",
-              SG.emailContent = "test",
-              SG.emailToAddress = "amast09@gmail.com"
-            }
-      )
-  return (parseResult3 contacts)
+  rawResult <- liftIO $ getAccessTokens code
+  nextToken <- liftIO $ getNextToken rawResult
+  connectionsResponse <- liftIO $ makeContactsRequest nextToken
+
+  let contacts = fmap contactsFromConnectionsResponse connectionsResponse
+  let numberOfContacts = fmap length contacts
+
+  now <- liftIO getCurrentTime
+  _ <- liftIO $ sendBirthdayEmail now contacts
+
+  return (parseResult numberOfContacts)
 handleOauthCallback Nothing (Just e) = return HandlerResult {result = e}
 handleOauthCallback _ _ = throwError err400
 
-parseResult1 :: Either String AccessTokensResponse -> HandlerResult
-parseResult1 (Right r) = HandlerResult {result = refreshToken r}
-parseResult1 (Left e) = HandlerResult {result = e}
+parseResult :: Show a => Either String a -> HandlerResult
+parseResult (Right r) = HandlerResult {result = show r}
+parseResult (Left e) = HandlerResult {result = e}
 
-parseResult2 :: Either String NewAccessTokenResponse -> HandlerResult
-parseResult2 (Right r) = HandlerResult {result = accessToken r}
-parseResult2 (Left e) = HandlerResult {result = e}
+sendBirthdayEmail :: UTCTime -> Either String [Contact] -> IO ()
+sendBirthdayEmail now (Right contacts) = do
+  let birthdayMessage = createBirthdayEmailMessage now contacts
+  sendEmail
+    SG.SendEmailParams
+      { SG.emailSubject = "Today's Birthdays!",
+        SG.emailContent = birthdayMessage,
+        SG.emailToAddress = "amast09@gmail.com"
+      }
 
-parseResult3 :: Either String ConnectionsResponse -> HandlerResult
-parseResult3 (Right r) = HandlerResult {result = show (length $ contactsFromConnectionsResponse r)}
-parseResult3 (Left e) = HandlerResult {result = e}
+contactsWithBirthdaysToday _ _ = pure ()
 
 getNextToken :: Either String AccessTokensResponse -> IO (Either String NewAccessTokenResponse)
 getNextToken (Right r) = getNewAccessToken $ refreshToken r
