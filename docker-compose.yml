@@ -1,0 +1,41 @@
+services:
+  dev-client:
+    container_name: "birthday-notifier__client"
+    build:
+      context: "./client"
+    depends_on:
+      - dev-api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app/client
+      - /app/client/node_modules/
+    environment:
+      REACT_APP_GOOGLE_API_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID}"
+      REACT_APP_GOOGLE_OAUTH_REDIRECT_URI: "${GOOGLE_OAUTH_REDIRECT_URI}"
+#    command: ["npm", "start"]
+  dev-api:
+    container_name: "birthday-notifier__api"
+    build:
+      context: "./api"
+    depends_on:
+      - dev-db
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./:/app/api
+    environment:
+      API_PORT: "${API_PORT}"
+      GOOGLE_OAUTH_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID}"
+      GOOGLE_OAUTH_CLIENT_SECRET: "${GOOGLE_OAUTH_CLIENT_SECRET}"
+#    command: ["yarn", "workspace", "@payandhr/api", "dev"]
+  dev-db:
+    image: postgres:13.2
+    restart: "always"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_PORT: "${POSTGRES_PORT}"

@@ -1,7 +1,11 @@
 {
-  "name": "my-app",
+  "name": "birthday-notifier-client",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "16.13.1"
+  },
+  "engineStrict": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.15.1",
     "@testing-library/react": "^11.2.7",

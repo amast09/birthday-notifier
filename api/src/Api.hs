@@ -29,7 +29,7 @@ usersApi = Proxy
 
 run :: IO ()
 run = do
-  let port = 3001
+  let port = 3001 -- getEnv "API_PORT"
       settings =
         setPort port $
           setBeforeMainLoop (hPutStrLn stderr ("listening on port " ++ show port)) defaultSettings
