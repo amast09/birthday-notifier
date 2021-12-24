@@ -44,6 +44,7 @@ library
     , http-client
     , http-client-tls
     , http-types
+    , postgresql-simple
     , servant
     , servant-server
     , time
@@ -68,6 +69,7 @@ executable api-exe
     , http-client
     , http-client-tls
     , http-types
+    , postgresql-simple
     , servant
     , servant-server
     , time
@@ -93,6 +95,7 @@ test-suite api-test
     , http-client
     , http-client-tls
     , http-types
+    , postgresql-simple
     , servant
     , servant-server
     , time

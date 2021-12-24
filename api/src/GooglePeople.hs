@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -22,7 +21,7 @@ getConnections accessToken = do
   let request =
         initialRequest
           { method = "GET",
-            queryString = (pack ("access_token=" ++ accessToken ++ "&pageSize=2000&personFields=names,birthdays")),
+            queryString = pack ("access_token=" ++ accessToken ++ "&pageSize=2000&personFields=names,birthdays"),
             requestHeaders = [("Content-Type", "application/json; charset=utf-8")]
           }
 

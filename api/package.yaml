@@ -12,17 +12,18 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/amast09/birthday-notifier/api#readme>
 
 dependencies:
+- aeson
 - base
-- time
+- bytestring
 - HTTP
-- http-types
 - http-client
 - http-client-tls
-- bytestring
+- http-types
+- postgresql-simple
 - servant
 - servant-server
+- time
 - transformers
-- aeson
 - wai
 - warp
 
