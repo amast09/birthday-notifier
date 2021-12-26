@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module AccessTokensResponse (AccessTokensResponse, refreshToken) where
 

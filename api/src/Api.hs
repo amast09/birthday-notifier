@@ -19,7 +19,7 @@ import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.ToRow
 import GHC.Generics
 import GoogleOAuth
-import GooglePeople (getConnections)
+import GooglePeople (getConnections, getUserEmail)
 import Network.Wai
 import Network.Wai.Handler.Warp
 import NewAccessTokenResponse (NewAccessTokenResponse, accessToken)
@@ -34,37 +34,26 @@ type BirthdayNotifierApi =
 usersApi :: Proxy BirthdayNotifierApi
 usersApi = Proxy
 
-data RefreshTokenRow = RefreshTokenRow {email :: String, refresh_token :: String}
-  deriving (Show)
-
-instance FromRow RefreshTokenRow where
-  fromRow = RefreshTokenRow <$> field <*> field
-
-instance ToRow RefreshTokenRow where
-  toRow t = [toField (email t), toField (refresh_token t)]
-
-allRefreshTokens :: Connection -> IO [RefreshTokenRow]
-allRefreshTokens c = query_ c "SELECT email, refresh_token FROM google_oauth_refresh_token"
-
-insertRefreshToken :: Connection -> RefreshTokenRow -> IO Int64
-insertRefreshToken c = execute c "INSERT INTO google_oauth_refresh_token (email, refresh_token) VALUES (?, ?)"
-
 run :: IO ()
 run = do
-  let localPG =
+  postgresHost <- getEnv "POSTGRES_HOST"
+  postgresDatabase <- getEnv "POSTGRES_DB"
+  postgresUser <- getEnv "POSTGRES_USER"
+  postgresPassword <- getEnv "POSTGRES_PASSWORD"
+  stringPort <- getEnv "API_PORT"
+
+  let connInfo =
         defaultConnectInfo
-          { connectHost = "localhost",
-            connectDatabase = "birthday-notifier-database",
-            connectUser = "birthday-notifier-user",
-            connectPassword = "birthday-notifier-password"
+          { connectHost = postgresHost,
+            connectDatabase = postgresDatabase,
+            connectUser = postgresUser,
+            connectPassword = postgresPassword
           }
 
-  conn <- connect localPG
-  insertResult <- insertRefreshToken conn (RefreshTokenRow {email = "amast09@gmail.com", refresh_token = "refresh token!"})
-  abc <- allRefreshTokens conn
-  _ <- print abc
+  pgConn <- connect connInfo
 
-  port <- getEnv "API_PORT"
+  -- TODO: Handle a string that is not an integer
+  let port = read stringPort :: Int
   let settings =
         setPort port $
           setBeforeMainLoop (hPutStrLn stderr ("listening on port " ++ show port)) defaultSettings
@@ -81,6 +70,8 @@ handleOauthCallback (Just code) Nothing = do
   rawResult <- liftIO $ getAccessTokens code
   nextToken <- liftIO $ getNextToken rawResult
   connectionsResponse <- liftIO $ makeContactsRequest nextToken
+  emailResponse <- liftIO $ makeEmailRequest nextToken
+  _ <- liftIO $ print emailResponse
 
   let contacts = fmap contactsFromConnectionsResponse connectionsResponse
   let numberOfContacts = fmap length contacts
@@ -115,6 +106,10 @@ getNextToken (Left l) = pure (Left l)
 makeContactsRequest :: Either String NewAccessTokenResponse -> IO (Either String ConnectionsResponse)
 makeContactsRequest (Right r) = getConnections $ accessToken r
 makeContactsRequest (Left l) = pure (Left l)
+
+makeEmailRequest :: Either String NewAccessTokenResponse -> IO (Either String String)
+makeEmailRequest (Right r) = fmap Right (getUserEmail $ accessToken r)
+makeEmailRequest (Left l) = pure (Left l)
 
 newtype HandlerResult = HandlerResult {result :: String} deriving (Eq, Show, Generic)
 
