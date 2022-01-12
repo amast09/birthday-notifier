@@ -12,4 +12,5 @@ RUN stack build --only-dependencies
 COPY / /app
 RUN stack build
 
+# TODO: don't use sleep :)
 CMD sh -c "sleep 5 && stack exec api-exe"
