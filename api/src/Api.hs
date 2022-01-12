@@ -19,7 +19,7 @@ import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.ToRow
 import GHC.Generics
 import GoogleOAuth
-import GooglePeople (getConnections, getUserEmail)
+import GooglePeople (getConnections)
 import Network.Wai
 import Network.Wai.Handler.Warp
 import NewAccessTokenResponse (NewAccessTokenResponse, accessToken)
@@ -70,8 +70,6 @@ handleOauthCallback (Just code) Nothing = do
   rawResult <- liftIO $ getAccessTokens code
   nextToken <- liftIO $ getNextToken rawResult
   connectionsResponse <- liftIO $ makeContactsRequest nextToken
-  emailResponse <- liftIO $ makeEmailRequest nextToken
-  _ <- liftIO $ print emailResponse
 
   let contacts = fmap contactsFromConnectionsResponse connectionsResponse
   let numberOfContacts = fmap length contacts
@@ -106,10 +104,6 @@ getNextToken (Left l) = pure (Left l)
 makeContactsRequest :: Either String NewAccessTokenResponse -> IO (Either String ConnectionsResponse)
 makeContactsRequest (Right r) = getConnections $ accessToken r
 makeContactsRequest (Left l) = pure (Left l)
-
-makeEmailRequest :: Either String NewAccessTokenResponse -> IO (Either String String)
-makeEmailRequest (Right r) = fmap Right (getUserEmail $ accessToken r)
-makeEmailRequest (Left l) = pure (Left l)
 
 newtype HandlerResult = HandlerResult {result :: String} deriving (Eq, Show, Generic)
 

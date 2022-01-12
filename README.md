@@ -4,8 +4,9 @@ monorepo to handle notifying an email of their Google contacts birthday
 
 ### App
 
-- Create refresh tokens interface
-- Use refresh token interface in oauth callback
+- Update oauth response to parse "id_token"
+- Parse email from "id_token" JWT
+- Make sure OauthRefresh interface can work with email
 - Setup daily cron to just print "hello world"
   - https://hackage.haskell.org/package/cron
 - Create b-day notifier job to use oauth tokens, fetch birthdays, filter, then email

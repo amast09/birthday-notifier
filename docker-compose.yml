@@ -3,26 +3,29 @@ services:
     container_name: "birthday-notifier__client"
     build:
       context: "./client"
+      target: "dev"
     depends_on:
       - api
     ports:
       - "3000:3000"
     volumes:
-      - ./:/app/client
-      - /app/client/node_modules/
+      - ./client:/app
+      - /app/node_modules/
     environment:
       REACT_APP_GOOGLE_API_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID}"
       REACT_APP_GOOGLE_OAUTH_REDIRECT_URI: "${GOOGLE_OAUTH_REDIRECT_URI}"
+    command: ["npm", "start"]
   api:
     container_name: "birthday-notifier__api"
     build:
       context: "./api"
     depends_on:
-      - migrations
+      - db
     ports:
       - "3001:3001"
     volumes:
-      - ./:/app/api
+      - ./api:/app
+      - /app/.stack-work/
     environment:
       API_PORT: "${API_PORT}"
       POSTGRES_HOST: "${POSTGRES_HOST}"
@@ -31,6 +34,7 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       GOOGLE_OAUTH_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID}"
       GOOGLE_OAUTH_CLIENT_SECRET: "${GOOGLE_OAUTH_CLIENT_SECRET}"
+      SENDGRID_API_KEY: "${SENDGRID_API_KEY}"
   migrations:
     container_name: "birthday-notifier__migrations"
     build:
