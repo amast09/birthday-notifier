@@ -1,18 +1,18 @@
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveAnyClass #-}
 
-module AccessTokensResponse (AccessTokensResponse(..), getEmailAddress) where
+module AccessTokensResponse (AccessTokensResponse (..), getEmailAddress) where
 
 import Data.Aeson
-import GHC.Generics
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy as LS
+import GHC.Generics
+import qualified Jose.Jwa as JWA
 import qualified Jose.Jwk as JWK
 import qualified Jose.Jwt as JWT
-import qualified Jose.Jwa as JWA
 
-data EmailJwtPayload = EmailJwtPayload { email :: String } deriving (Show, Generic, ToJSON, FromJSON)
+data EmailJwtPayload = EmailJwtPayload {email :: String} deriving (Show, Generic, ToJSON, FromJSON)
 
 data EmailParseError = FailedToCreateJwk | UnexpectedJwtContent | UnexpectedJwtPayload | JwtError JWT.JwtError deriving (Show, Eq)
 
@@ -22,19 +22,19 @@ parseJwtPayload jwtJsonPayload =
       nxt = case maybeParsedPayload of
         Just payload -> Right $ email payload
         Nothing -> Left UnexpectedJwtPayload
-  in nxt
+   in nxt
 
 parseDecodedJwt :: JWT.JwtContent -> Either EmailParseError String
 parseDecodedJwt (JWT.Jws (_, d)) = parseJwtPayload d
 parseDecodedJwt _ = Left UnexpectedJwtContent
 
-decodeJwt :: Maybe JWK.Jwk -> JWT.JwtEncoding -> C.ByteString -> IO(Either EmailParseError JWT.JwtContent)
+decodeJwt :: Maybe JWK.Jwk -> JWT.JwtEncoding -> C.ByteString -> IO (Either EmailParseError JWT.JwtContent)
 decodeJwt (Just jwk) encoding jwt = do
   let decodedIO = (JWT.decode [jwk] (Just encoding) jwt) :: IO (Either JWT.JwtError JWT.JwtContent)
   decoded <- decodedIO
   let result = case decoded of
-        Left(e) -> Left (JwtError e)
-        Right(r) -> Right r
+        Left (e) -> Left (JwtError e)
+        Right (r) -> Right r
   return result
 decodeJwt Nothing _ _ = pure $ Left FailedToCreateJwk
 

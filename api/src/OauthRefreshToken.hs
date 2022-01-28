@@ -16,7 +16,7 @@ instance FromRow RefreshTokenRow where
 
 instance ToRow RefreshTokenRow where
   toRow t = [toField (email t), toField (refresh_token t)]
-  
+
 getTokens :: Connection -> IO [String]
 getTokens c = do
   refreshTokens <- query_ c "SELECT email, refresh_token FROM google_oauth_refresh_token"

@@ -13,4 +13,7 @@ stack build
 
 # Run the api
 stack exec api-exe
+
+# Format the code
+ormolu --mode inplace $(git ls-files '*.hs')
 ```
