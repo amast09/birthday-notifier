@@ -42,9 +42,11 @@ library
     , aeson
     , base
     , bytestring
+    , hspec
     , http-client
     , http-client-tls
     , http-types
+    , jose-jwt
     , postgresql-simple
     , servant
     , servant-server
@@ -67,9 +69,11 @@ executable api-exe
     , api
     , base
     , bytestring
+    , hspec
     , http-client
     , http-client-tls
     , http-types
+    , jose-jwt
     , postgresql-simple
     , servant
     , servant-server
@@ -83,6 +87,7 @@ test-suite api-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      AccessTokensResponseSpec
       Paths_api
   hs-source-dirs:
       test
@@ -93,9 +98,11 @@ test-suite api-test
     , api
     , base
     , bytestring
+    , hspec
     , http-client
     , http-client-tls
     , http-types
+    , jose-jwt
     , postgresql-simple
     , servant
     , servant-server

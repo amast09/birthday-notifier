@@ -95,8 +95,6 @@ sendBirthdayEmail now (Right contacts) = do
         SG.emailToAddress = "amast09@gmail.com"
       }
 
-contactsWithBirthdaysToday _ _ = pure ()
-
 getNextToken :: Either String AccessTokensResponse -> IO (Either String NewAccessTokenResponse)
 getNextToken (Right r) = getNewAccessToken $ refreshToken r
 getNextToken (Left l) = pure (Left l)

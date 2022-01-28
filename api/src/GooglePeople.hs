@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module GooglePeople (getConnections, getUserEmail) where
+module GooglePeople (getConnections) where
 
 import ConnectionsResponse
 import Data.Aeson

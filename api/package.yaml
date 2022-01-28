@@ -19,6 +19,8 @@ dependencies:
 - http-client
 - http-client-tls
 - http-types
+- hspec
+- jose-jwt
 - postgresql-simple
 - servant
 - servant-server
