@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module AccessTokensResponse (AccessTokensResponse (..), getEmailAddress) where
+module AccessTokensResponse (AccessTokensResponse (..), getEmailAddress, EmailParseError) where
 
 import Data.Aeson
 import qualified Data.ByteString.Char8 as C

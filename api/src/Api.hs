@@ -5,7 +5,8 @@
 
 module Api where
 
-import AccessTokensResponse (AccessTokensResponse, refreshToken)
+import qualified AccessTokensResponse as ATR
+import qualified OauthRefreshToken as ORT
 import ConnectionsResponse (ConnectionsResponse, connections)
 import Contact (Contact, contactsFromConnectionsResponse, createBirthdayEmailMessage, name)
 import Control.Monad.IO.Class
@@ -95,13 +96,23 @@ sendBirthdayEmail now (Right contacts) = do
         SG.emailToAddress = "amast09@gmail.com"
       }
 
-getNextToken :: Either String AccessTokensResponse -> IO (Either String NewAccessTokenResponse)
-getNextToken (Right r) = getNewAccessToken $ refreshToken r
+getNextToken :: Either String ATR.AccessTokensResponse -> IO (Either String NewAccessTokenResponse)
+getNextToken (Right r) = getNewAccessToken $ ATR.refreshToken r
 getNextToken (Left l) = pure (Left l)
 
 makeContactsRequest :: Either String NewAccessTokenResponse -> IO (Either String ConnectionsResponse)
 makeContactsRequest (Right r) = getConnections $ accessToken r
 makeContactsRequest (Left l) = pure (Left l)
+
+saveTokenToDb :: Connection -> ATR.AccessTokensResponse -> IO(Either ATR.EmailParseError Int64)
+saveTokenToDb conn at = do
+  maybeEmail <- ATR.getEmailAddress at
+  let maybeRefreshTokenRow = fmap (\email -> ORT.RefreshTokenRow { ORT.refresh_token = ATR.accessToken at, ORT.email = email }) maybeEmail
+  let foobar = case maybeRefreshTokenRow of
+      Right row -> fmap Right (OTR.insertToken conn row)
+      e -> pure e
+  pure $ Right 8
+
 
 newtype HandlerResult = HandlerResult {result :: String} deriving (Eq, Show, Generic)
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module OauthRefreshToken (getTokens, insertToken) where
+module OauthRefreshToken (RefreshTokenRow(..), getTokens, insertToken) where
 
 import Data.Int (Int64)
 import Database.PostgreSQL.Simple
@@ -17,6 +17,7 @@ instance FromRow RefreshTokenRow where
 instance ToRow RefreshTokenRow where
   toRow t = [toField (email t), toField (refresh_token t)]
 
+-- TODO: How do DB failures propagate?
 getTokens :: Connection -> IO [String]
 getTokens c = do
   refreshTokens <- query_ c "SELECT email, refresh_token FROM google_oauth_refresh_token"
