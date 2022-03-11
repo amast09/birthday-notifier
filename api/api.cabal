@@ -24,7 +24,6 @@ source-repository head
 
 library
   exposed-modules:
-      AccessTokensResponse
       Api
       ConnectionsResponse
       Contact
@@ -32,6 +31,7 @@ library
       GooglePeople
       NewAccessTokenResponse
       OauthRefreshToken
+      RefreshTokenResponse
       SendGrid
   other-modules:
       Paths_api
@@ -87,7 +87,7 @@ test-suite api-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      AccessTokensResponseSpec
+      RefreshTokenResponseSpec
       Paths_api
   hs-source-dirs:
       test

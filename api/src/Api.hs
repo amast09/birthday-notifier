@@ -5,8 +5,7 @@
 
 module Api where
 
-import qualified AccessTokensResponse as ATR
-import qualified OauthRefreshToken as ORT
+import qualified RefreshTokenResponse as ATR
 import ConnectionsResponse (ConnectionsResponse, connections)
 import Contact (Contact, contactsFromConnectionsResponse, createBirthdayEmailMessage, name)
 import Control.Monad.IO.Class
@@ -24,10 +23,12 @@ import GooglePeople (getConnections)
 import Network.Wai
 import Network.Wai.Handler.Warp
 import NewAccessTokenResponse (NewAccessTokenResponse, accessToken)
+import qualified OauthRefreshToken as ORT
 import SendGrid as SG
 import Servant
 import System.Environment (getEnv)
 import System.IO
+import Jose.Jwk (JwkSet)
 
 type BirthdayNotifierApi =
   "google-oauth-callback" :> QueryParam "code" String :> QueryParam "error" String :> Get '[JSON] HandlerResult
@@ -58,17 +59,19 @@ run = do
   let settings =
         setPort port $
           setBeforeMainLoop (hPutStrLn stderr ("listening on port " ++ show port)) defaultSettings
-  runSettings settings =<< mkApp
+  runSettings settings =<< mkApp pgConn
 
-mkApp :: IO Application
-mkApp = return $ serve usersApi server
+mkApp :: Connection -> IO Application
+mkApp conn = return $ serve usersApi (server conn)
 
-server :: Server BirthdayNotifierApi
+server :: Connection -> Server BirthdayNotifierApi
 server = handleOauthCallback
 
-handleOauthCallback :: Maybe String -> Maybe String -> Handler HandlerResult
-handleOauthCallback (Just code) Nothing = do
-  rawResult <- liftIO $ getAccessTokens code
+handleOauthCallback :: Connection -> Maybe String -> Maybe String -> Handler HandlerResult
+handleOauthCallback conn (Just code) Nothing = do
+  rawResult <- liftIO $ getRefreshToken code
+  jwkSet <- liftIO $ getJwkKeys ()
+  insertionResult <- liftIO $ saveTokenToDb conn jwkSet rawResult
   nextToken <- liftIO $ getNextToken rawResult
   connectionsResponse <- liftIO $ makeContactsRequest nextToken
 
@@ -78,9 +81,9 @@ handleOauthCallback (Just code) Nothing = do
   now <- liftIO getCurrentTime
   _ <- liftIO $ sendBirthdayEmail now contacts
 
-  return (parseResult numberOfContacts)
-handleOauthCallback Nothing (Just e) = return HandlerResult {result = e}
-handleOauthCallback _ _ = throwError err400
+  return (parseResult insertionResult)
+handleOauthCallback _ Nothing (Just e) = return HandlerResult {result = e}
+handleOauthCallback _ _ _ = throwError err400
 
 parseResult :: Show a => Either String a -> HandlerResult
 parseResult (Right r) = HandlerResult {result = show r}
@@ -96,7 +99,7 @@ sendBirthdayEmail now (Right contacts) = do
         SG.emailToAddress = "amast09@gmail.com"
       }
 
-getNextToken :: Either String ATR.AccessTokensResponse -> IO (Either String NewAccessTokenResponse)
+getNextToken :: Either String ATR.RefreshTokenResponse -> IO (Either String NewAccessTokenResponse)
 getNextToken (Right r) = getNewAccessToken $ ATR.refreshToken r
 getNextToken (Left l) = pure (Left l)
 
@@ -104,15 +107,15 @@ makeContactsRequest :: Either String NewAccessTokenResponse -> IO (Either String
 makeContactsRequest (Right r) = getConnections $ accessToken r
 makeContactsRequest (Left l) = pure (Left l)
 
-saveTokenToDb :: Connection -> ATR.AccessTokensResponse -> IO(Either ATR.EmailParseError Int64)
-saveTokenToDb conn at = do
-  maybeEmail <- ATR.getEmailAddress at
-  let maybeRefreshTokenRow = fmap (\email -> ORT.RefreshTokenRow { ORT.refresh_token = ATR.accessToken at, ORT.email = email }) maybeEmail
-  let foobar = case maybeRefreshTokenRow of
-      Right row -> fmap Right (OTR.insertToken conn row)
-      e -> pure e
-  pure $ Right 8
-
+saveTokenToDb :: Connection -> Either String JwkSet -> Either String ATR.RefreshTokenResponse -> IO (Either String Int64)
+saveTokenToDb _ (Left e) _ = pure (Left e)
+saveTokenToDb _ _ (Left e) = pure (Left e)
+saveTokenToDb conn (Right jwkSet) (Right at) = do
+  maybeEmail <- ATR.getEmailAddress jwkSet at
+  let maybeRefreshTokenRow = fmap (\email -> ORT.RefreshTokenRow {ORT.refresh_token = ATR.accessToken at, ORT.email = email}) maybeEmail
+  case maybeRefreshTokenRow of
+        Right row -> fmap Right (ORT.insertToken conn row)
+        Left e -> pure (Left (show e))
 
 newtype HandlerResult = HandlerResult {result :: String} deriving (Eq, Show, Generic)
 
