@@ -1,55 +1,65 @@
-name:                api
-version:             0.0.1
-github:              "amast09/birthday-notifier/api"
-license:             MIT
-author:              "Aaron Mast"
-maintainer:          "amast09@gmail.com"
-copyright:           "2021 Aaron Mast"
+name: api
+version: 0.0.1
+github: "amast09/birthday-notifier/api"
+license: MIT
+author: "Aaron Mast"
+maintainer: "amast09@gmail.com"
+copyright: "2021 Aaron Mast"
 
 extra-source-files:
-- README.md
+  - README.md
 
-description:         Please see the README on GitHub at <https://github.com/amast09/birthday-notifier/api#readme>
+description: Please see the README on GitHub at <https://github.com/amast09/birthday-notifier/api#readme>
 
 dependencies:
-- aeson
-- base
-- bytestring
-- HTTP
-- http-client
-- http-client-tls
-- http-types
-- hspec
-- jose-jwt
-- postgresql-simple
-- servant
-- servant-server
-- time
-- transformers
-- wai
-- warp
+  - aeson
+  - base
+  - bytestring
+  - cron
+  - HTTP
+  - http-client
+  - http-client-tls
+  - http-types
+  - hspec
+  - jose-jwt
+  - postgresql-simple
+  - servant
+  - servant-server
+  - time
+  - transformers
+  - wai
+  - warp
 
 library:
   source-dirs: src
 
 executables:
   api-exe:
-    main:                Main.hs
-    source-dirs:         app
+    main: Main.hs
+    source-dirs: bin/api
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - api
+      - api
+  cron-exe:
+    main: Main.hs
+    source-dirs: bin/cron
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - api
 
 tests:
   api-test:
-    main:                Spec.hs
-    source-dirs:         test
+    main: Spec.hs
+    source-dirs: test
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - api
+      - api

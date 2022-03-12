@@ -19,8 +19,6 @@ to be notified via a daily email about their Google Contact's birthdays.
 
 ## TODO
 
-- Setup daily cron to just print "hello world"
-  - https://hackage.haskell.org/package/cron
 - Create b-day notifier job to use oauth tokens, fetch birthdays, filter, then email
 - General clean-up to make things not haphazard
 - Figure out "safe" postgres operations

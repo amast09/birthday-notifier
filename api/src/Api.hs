@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Api where
+module Api (Api.run) where
 
 import qualified RefreshTokenResponse as ATR
 import ConnectionsResponse (ConnectionsResponse, connections)
