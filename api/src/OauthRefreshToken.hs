@@ -18,10 +18,9 @@ instance ToRow RefreshTokenRow where
   toRow t = [toField (email t), toField (refresh_token t)]
 
 -- TODO: How do DB failures propagate?
-getTokens :: Connection -> IO [String]
+getTokens :: Connection -> IO [RefreshTokenRow]
 getTokens c = do
-  refreshTokens <- query_ c "SELECT email, refresh_token FROM google_oauth_refresh_token"
-  return (fmap refresh_token refreshTokens)
+  query_ c "SELECT email, refresh_token FROM google_oauth_refresh_token"
 
 insertToken :: Connection -> RefreshTokenRow -> IO Int64
 insertToken c = execute c "INSERT INTO google_oauth_refresh_token (email, refresh_token) VALUES (?, ?)"

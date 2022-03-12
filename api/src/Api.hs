@@ -72,15 +72,6 @@ handleOauthCallback conn (Just code) Nothing = do
   rawResult <- liftIO $ getRefreshToken code
   jwkSet <- liftIO $ getJwkKeys ()
   insertionResult <- liftIO $ saveTokenToDb conn jwkSet rawResult
-  nextToken <- liftIO $ getNextToken rawResult
-  connectionsResponse <- liftIO $ makeContactsRequest nextToken
-
-  let contacts = fmap contactsFromConnectionsResponse connectionsResponse
-  let numberOfContacts = fmap length contacts
-
-  now <- liftIO getCurrentTime
-  _ <- liftIO $ sendBirthdayEmail now contacts
-
   return (parseResult insertionResult)
 handleOauthCallback _ Nothing (Just e) = return HandlerResult {result = e}
 handleOauthCallback _ _ _ = throwError err400
@@ -89,23 +80,6 @@ parseResult :: Show a => Either String a -> HandlerResult
 parseResult (Right r) = HandlerResult {result = show r}
 parseResult (Left e) = HandlerResult {result = e}
 
-sendBirthdayEmail :: UTCTime -> Either String [Contact] -> IO ()
-sendBirthdayEmail now (Right contacts) = do
-  let birthdayMessage = createBirthdayEmailMessage now contacts
-  sendEmail
-    SG.SendEmailParams
-      { SG.emailSubject = "Today's Birthdays!",
-        SG.emailContent = birthdayMessage,
-        SG.emailToAddress = "amast09@gmail.com"
-      }
-
-getNextToken :: Either String ATR.RefreshTokenResponse -> IO (Either String NewAccessTokenResponse)
-getNextToken (Right r) = getNewAccessToken $ ATR.refreshToken r
-getNextToken (Left l) = pure (Left l)
-
-makeContactsRequest :: Either String NewAccessTokenResponse -> IO (Either String ConnectionsResponse)
-makeContactsRequest (Right r) = getConnections $ accessToken r
-makeContactsRequest (Left l) = pure (Left l)
 
 saveTokenToDb :: Connection -> Either String JwkSet -> Either String ATR.RefreshTokenResponse -> IO (Either String Int64)
 saveTokenToDb _ (Left e) _ = pure (Left e)

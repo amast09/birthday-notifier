@@ -22,7 +22,7 @@ import qualified Jose.Jwa as JWA
 import qualified Jose.Jwk as JWK
 import qualified Jose.Jwt as JWT
 
-data EmailJwtPayload = EmailJwtPayload {email :: String} deriving (Show, Generic, ToJSON, FromJSON)
+newtype EmailJwtPayload = EmailJwtPayload {email :: String} deriving (Show, Generic, ToJSON, FromJSON)
 
 data EmailParseError = BadJwkSet | UnexpectedJwtContent | UnexpectedJwtPayload | JwtError JWT.JwtError deriving (Show, Eq)
 

@@ -24,13 +24,13 @@ data Content = Content {contentType :: String, value :: String} deriving (Eq, Sh
 
 $(deriveJSON defaultOptions {fieldLabelModifier = \x -> if x == "contentType" then "type" else x} ''Content)
 
-data ToPersonalization = ToPersonalization {email :: String} deriving (Eq, Generic, Show)
+newtype ToPersonalization = ToPersonalization {email :: String} deriving (Eq, Generic, Show)
 
 instance FromJSON ToPersonalization
 
 instance ToJSON ToPersonalization
 
-data Personalization = Personalization {toPersonalization :: [ToPersonalization]} deriving (Eq, Generic, Show)
+newtype Personalization = Personalization {toPersonalization :: [ToPersonalization]} deriving (Eq, Generic, Show)
 
 $(deriveJSON defaultOptions {fieldLabelModifier = \x -> if x == "toPersonalization" then "to" else x} ''Personalization)
 
@@ -50,6 +50,7 @@ data SendEmailParams = SendEmailParams
     emailToAddress :: String
   }
 
+-- TODO: Failure modes?
 sendEmail :: SendEmailParams -> IO ()
 sendEmail params = do
   manager <- newManager tlsManagerSettings
