@@ -34,7 +34,24 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       GOOGLE_OAUTH_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID}"
       GOOGLE_OAUTH_CLIENT_SECRET: "${GOOGLE_OAUTH_CLIENT_SECRET}"
+  cron:
+    container_name: "birthday-notifier__cron"
+    build:
+      context: "./api"
+    depends_on:
+      - db
+    volumes:
+      - ./api:/app
+      - /app/.stack-work/
+    environment:
+      POSTGRES_HOST: "${POSTGRES_HOST}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      GOOGLE_OAUTH_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID}"
+      GOOGLE_OAUTH_CLIENT_SECRET: "${GOOGLE_OAUTH_CLIENT_SECRET}"
       SENDGRID_API_KEY: "${SENDGRID_API_KEY}"
+    command: "stack exec cron-exec"
   migrations:
     container_name: "birthday-notifier__migrations"
     build:
