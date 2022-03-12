@@ -19,11 +19,14 @@ to be notified via a daily email about their Google Contact's birthdays.
 
 ## TODO
 
-- Create b-day notifier job to use oauth tokens, fetch birthdays, filter, then email
+- Get Docker Compose working with new cron functionality
 - General clean-up to make things not haphazard
 - Figure out "safe" postgres operations
-- nginx to front both API and frontend
+- Figure out "safe" HTTP operations
+- Figure out "safe" ENV access
+- Any other remaing TODO's
 - verify Google Oauth JWT explicitly (https://developers.google.com/identity/protocols/oauth2/openid-connect#validatinganidtoken)
+- k8s implementation
 
 ### Dev
 
