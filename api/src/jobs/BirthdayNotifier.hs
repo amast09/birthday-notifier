@@ -9,6 +9,7 @@ import NewAccessTokenResponse (NewAccessTokenResponse (accessToken))
 import OauthRefreshToken (RefreshTokenRow (email, refresh_token), getTokens)
 import SendGrid (SendEmailParams (SendEmailParams, emailContent, emailSubject, emailToAddress), sendEmail)
 import System.Environment (getEnv)
+import System.IO (hPutStrLn, stderr)
 
 data DailyBirthdayEmailError = FailedToFetchNewAccessToken | FailedToFetchConnections deriving (Show, Eq)
 
@@ -18,7 +19,6 @@ sendDailyBirthdayEmail = do
   postgresDatabase <- getEnv "POSTGRES_DB"
   postgresUser <- getEnv "POSTGRES_USER"
   postgresPassword <- getEnv "POSTGRES_PASSWORD"
-  stringPort <- getEnv "API_PORT"
 
   let connInfo =
         defaultConnectInfo
@@ -37,6 +37,7 @@ sendDailyBirthdayEmail = do
 
 accessTokenForRefreshToken :: RefreshTokenRow -> IO (Either DailyBirthdayEmailError (String, NewAccessTokenResponse))
 accessTokenForRefreshToken refreshTokenRow = do
+  hPutStrLn stderr "Getting Access Token for Refresh Token"
   let refreshTokenString = refresh_token refreshTokenRow
   let emailForToken = email refreshTokenRow
   newAccessToken <- getNewAccessToken refreshTokenString
@@ -48,6 +49,7 @@ accessTokenForRefreshToken refreshTokenRow = do
 
 getContactsForAccessToken :: Either DailyBirthdayEmailError (String, NewAccessTokenResponse) -> IO (Either DailyBirthdayEmailError (String, NewAccessTokenResponse, [Contact]))
 getContactsForAccessToken (Right (emailForToken, accessTokenResponse)) = do
+  hPutStrLn stderr ("Pulling contacts for email " ++ emailForToken)
   connectionResponseForAccessToken <- getConnections $ accessToken accessTokenResponse
   return
     ( case connectionResponseForAccessToken of
@@ -58,12 +60,13 @@ getContactsForAccessToken (Left e) = pure $ Left e
 
 sendEmailForAccessToken :: UTCTime -> Either DailyBirthdayEmailError (String, NewAccessTokenResponse, [Contact]) -> IO (Either DailyBirthdayEmailError ())
 sendEmailForAccessToken birthDate (Right (emailForToken, accessTokenResponse, contacts)) = do
+  hPutStrLn stderr ("Sending email to " ++ emailForToken)
   let birthdayMessage = createBirthdayEmailMessage birthDate contacts
   sendEmail
     SendEmailParams
       { emailSubject = "Today's Birthdays!",
         emailContent = birthdayMessage,
-        emailToAddress = "amast09@gmail.com"
+        emailToAddress = emailForToken
       }
   return $ Right ()
 sendEmailForAccessToken _ (Left e) = pure $ Left e

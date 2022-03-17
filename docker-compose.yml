@@ -51,7 +51,7 @@ services:
       GOOGLE_OAUTH_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID}"
       GOOGLE_OAUTH_CLIENT_SECRET: "${GOOGLE_OAUTH_CLIENT_SECRET}"
       SENDGRID_API_KEY: "${SENDGRID_API_KEY}"
-    command: "stack exec cron-exec"
+    command: "stack exec cron-exe"
   migrations:
     container_name: "birthday-notifier__migrations"
     build:

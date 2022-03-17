@@ -19,7 +19,7 @@ to be notified via a daily email about their Google Contact's birthdays.
 
 ## TODO
 
-- Get Docker Compose working with new cron functionality
+- How is it not sending an empty email when there are no birthdays?
 - General clean-up to make things not haphazard
 - Figure out "safe" postgres operations
 - Figure out "safe" HTTP operations
@@ -34,6 +34,6 @@ to be notified via a daily email about their Google Contact's birthdays.
 - Formatting
 - Linting
 - Tests
-- Dockerfile
+- Better logging
 - CI/CD
 - Strong Types?

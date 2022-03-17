@@ -31,7 +31,9 @@ dependencies:
   - warp
 
 library:
-  source-dirs: src
+  source-dirs:
+    - src
+    - src/jobs
 
 executables:
   api-exe:
