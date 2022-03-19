@@ -60,13 +60,11 @@ getContactsForAccessToken (Left e) = pure $ Left e
 
 sendEmailForAccessToken :: UTCTime -> Either DailyBirthdayEmailError (String, NewAccessTokenResponse, [Contact]) -> IO (Either DailyBirthdayEmailError ())
 sendEmailForAccessToken birthDate (Right (emailForToken, accessTokenResponse, contacts)) = do
-  hPutStrLn stderr ("Sending email to " ++ emailForToken)
-  let birthdayMessage = createBirthdayEmailMessage birthDate contacts
-  sendEmail
-    SendEmailParams
-      { emailSubject = "Today's Birthdays!",
-        emailContent = birthdayMessage,
-        emailToAddress = emailForToken
-      }
-  return $ Right ()
+  let maybeBirthdayMessage = createBirthdayEmailMessage birthDate contacts
+  case maybeBirthdayMessage of
+    Just birthdayMessage -> hPutStrLn stderr ("Sending email to " ++ emailForToken)
+    Nothing -> hPutStrLn stderr ("No birthdays for " ++ emailForToken ++ " today, no email being sent")
+  case maybeBirthdayMessage of
+    Just birthdayMessage -> Right <$> sendEmail SendEmailParams {emailSubject = "Today's Birthdays!", emailContent = birthdayMessage, emailToAddress = emailForToken}
+    Nothing -> return $ Right ()
 sendEmailForAccessToken _ (Left e) = pure $ Left e

@@ -5,7 +5,6 @@
 
 module Api (Api.run) where
 
-import qualified RefreshTokenResponse as ATR
 import ConnectionsResponse (ConnectionsResponse, connections)
 import Contact (Contact, contactsFromConnectionsResponse, createBirthdayEmailMessage, name)
 import Control.Monad.IO.Class
@@ -20,15 +19,16 @@ import Database.PostgreSQL.Simple.ToRow
 import GHC.Generics
 import GoogleOAuth
 import GooglePeople (getConnections)
+import Jose.Jwk (JwkSet)
 import Network.Wai
 import Network.Wai.Handler.Warp
 import NewAccessTokenResponse (NewAccessTokenResponse, accessToken)
 import qualified OauthRefreshToken as ORT
+import qualified RefreshTokenResponse as ATR
 import SendGrid as SG
 import Servant
 import System.Environment (getEnv)
 import System.IO
-import Jose.Jwk (JwkSet)
 
 type BirthdayNotifierApi =
   "google-oauth-callback" :> QueryParam "code" String :> QueryParam "error" String :> Get '[JSON] HandlerResult
@@ -80,7 +80,6 @@ parseResult :: Show a => Either String a -> HandlerResult
 parseResult (Right r) = HandlerResult {result = show r}
 parseResult (Left e) = HandlerResult {result = e}
 
-
 saveTokenToDb :: Connection -> Either String JwkSet -> Either String ATR.RefreshTokenResponse -> IO (Either String Int64)
 saveTokenToDb _ (Left e) _ = pure (Left e)
 saveTokenToDb _ _ (Left e) = pure (Left e)
@@ -88,8 +87,8 @@ saveTokenToDb conn (Right jwkSet) (Right at) = do
   maybeEmail <- ATR.getEmailAddress jwkSet at
   let maybeRefreshTokenRow = fmap (\email -> ORT.RefreshTokenRow {ORT.refresh_token = ATR.accessToken at, ORT.email = email}) maybeEmail
   case maybeRefreshTokenRow of
-        Right row -> fmap Right (ORT.insertToken conn row)
-        Left e -> pure (Left (show e))
+    Right row -> fmap Right (ORT.insertToken conn row)
+    Left e -> pure (Left (show e))
 
 newtype HandlerResult = HandlerResult {result :: String} deriving (Eq, Show, Generic)
 

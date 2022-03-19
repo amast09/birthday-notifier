@@ -3,16 +3,16 @@
 
 module GoogleOAuth (getRefreshToken, getNewAccessToken, getJwkKeys) where
 
-import RefreshTokenResponse (RefreshTokenResponse)
 import Data.Aeson
 import Data.Aeson.Types (Parser)
 import GHC.Generics
+import Jose.Jwk
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import Network.HTTP.Types.Status (statusCode)
 import NewAccessTokenResponse (NewAccessTokenResponse)
+import RefreshTokenResponse (RefreshTokenResponse)
 import System.Environment (getEnv)
-import Jose.Jwk
 
 oauthUrl :: String
 oauthUrl = "https://oauth2.googleapis.com/token"
@@ -90,7 +90,7 @@ getJwkKeys :: () -> IO (Either String JwkSet)
 getJwkKeys _ = do
   manager <- newManager tlsManagerSettings
   initialRequest <- parseRequest jwkKeysUrl
-  let request = initialRequest { method = "GET", requestHeaders = [("Content-Type", "application/json; charset=utf-8")] }
+  let request = initialRequest {method = "GET", requestHeaders = [("Content-Type", "application/json; charset=utf-8")]}
   response <- httpLbs request manager
   let body = responseBody response
   print "----------------------------------------------------------------------"
@@ -98,4 +98,3 @@ getJwkKeys _ = do
   print $ "Response status code: " ++ show (statusCode $ responseStatus response)
   print $ "Response body:" ++ show body
   return (eitherDecode body :: Either String JwkSet)
-  

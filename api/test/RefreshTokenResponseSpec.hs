@@ -1,10 +1,10 @@
 module RefreshTokenResponseSpec (spec) where
 
-import RefreshTokenResponse
-import Test.Hspec
 import Data.Aeson
 import qualified Data.String as S
-import Jose.Jwk (JwkSet(JwkSet))
+import Jose.Jwk (JwkSet (JwkSet))
+import RefreshTokenResponse
+import Test.Hspec
 
 -- TODO -> Add tests that exercise all failure cases
 spec :: Spec

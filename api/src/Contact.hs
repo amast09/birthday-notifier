@@ -49,8 +49,9 @@ isContactsBirthday today c =
       (_, todayMonth, todayDay) = toGregorian . utctDay $ today
    in todayMonth == birthdayMonth && todayDay == birthdayDay
 
-createBirthdayEmailMessage :: UTCTime -> [Contact] -> String
+createBirthdayEmailMessage :: UTCTime -> [Contact] -> Maybe String
+createBirthdayEmailMessage _ [] = Nothing
 createBirthdayEmailMessage today cs =
   let contactsWithBirthdaysToday = filter (isContactsBirthday today) cs
       birthdayNames = fmap name contactsWithBirthdaysToday
-   in unlines birthdayNames
+   in Just $ unlines birthdayNames

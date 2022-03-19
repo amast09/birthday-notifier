@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module OauthRefreshToken (RefreshTokenRow(..), getTokens, insertToken) where
+module OauthRefreshToken (RefreshTokenRow (..), getTokens, insertToken) where
 
 import Data.Int (Int64)
 import Database.PostgreSQL.Simple
