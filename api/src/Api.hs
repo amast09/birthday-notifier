@@ -85,7 +85,7 @@ saveTokenToDb _ (Left e) _ = pure (Left e)
 saveTokenToDb _ _ (Left e) = pure (Left e)
 saveTokenToDb conn (Right jwkSet) (Right at) = do
   maybeEmail <- ATR.getEmailAddress jwkSet at
-  let maybeRefreshTokenRow = fmap (\email -> ORT.RefreshTokenRow {ORT.refresh_token = ATR.accessToken at, ORT.email = email}) maybeEmail
+  let maybeRefreshTokenRow = fmap (\email -> ORT.RefreshTokenRow {ORT.refresh_token = ATR.refreshToken at, ORT.email = email}) maybeEmail
   case maybeRefreshTokenRow of
     Right row -> fmap Right (ORT.insertToken conn row)
     Left e -> pure (Left (show e))
