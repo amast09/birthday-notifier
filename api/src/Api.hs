@@ -69,7 +69,7 @@ server = handleOauthCallback
 
 handleOauthCallback :: Connection -> Maybe String -> Maybe String -> Handler HandlerResult
 handleOauthCallback conn (Just code) Nothing = do
-  rawResult <- liftIO $ getRefreshToken code
+  rawResult <- liftIO $ getRefreshToken code -- TODO: Handle the case when they have already authenticated/authorized the app
   jwkSet <- liftIO $ getJwkKeys ()
   insertionResult <- liftIO $ saveTokenToDb conn jwkSet rawResult
   return (parseResult insertionResult)

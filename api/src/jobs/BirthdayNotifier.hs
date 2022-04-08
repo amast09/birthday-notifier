@@ -41,6 +41,9 @@ accessTokenForRefreshToken refreshTokenRow = do
   let refreshTokenString = refresh_token refreshTokenRow
   let emailForToken = email refreshTokenRow
   newAccessToken <- getNewAccessToken refreshTokenString
+  case newAccessToken of
+    Right _ -> hPutStrLn stderr ("Retrieved Access Token for " ++ emailForToken)
+    Left error -> hPutStrLn stderr ("Failed to retrieve Access Token for email " ++ emailForToken ++ ", received error" ++ error)
   return
     ( case newAccessToken of
         Right accessToken -> Right (emailForToken, accessToken)

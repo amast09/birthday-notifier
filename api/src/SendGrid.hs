@@ -6,12 +6,13 @@ module SendGrid (sendEmail, SendEmailParams (..)) where
 
 import Data.Aeson
 import Data.Aeson.TH (Options (fieldLabelModifier), defaultOptions, deriveJSON)
-import Data.ByteString.Char8
+import Data.ByteString.Char8 (pack)
 import GHC.Generics
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import Network.HTTP.Types.Status (statusCode)
 import System.Environment (getEnv)
+import System.IO (hPutStrLn, stderr)
 
 sendMailUrl :: String
 sendMailUrl = "https://api.sendgrid.com/v3/mail/send"
@@ -83,7 +84,7 @@ sendEmail params = do
 
   response <- httpLbs request manager
   let body = responseBody response
-  print "----------------------------------------------------------------------"
-  print $ "Making request for refresh token to: " ++ sendMailUrl
-  print $ "Response status code: " ++ show (statusCode $ responseStatus response)
-  print $ "Response body:" ++ show body
+  hPutStrLn stderr "----------------------------------------------------------------------"
+  hPutStrLn stderr $ "Making request for refresh token to: " ++ sendMailUrl
+  hPutStrLn stderr $ "Response status code: " ++ show (statusCode $ responseStatus response)
+  hPutStrLn stderr $ "Response body:" ++ show body

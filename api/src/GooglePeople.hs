@@ -5,10 +5,11 @@ module GooglePeople (getConnections) where
 
 import ConnectionsResponse
 import Data.Aeson
-import Data.ByteString.Char8
+import Data.ByteString.Char8 (pack)
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import Network.HTTP.Types.Status (statusCode)
+import System.IO (hPutStrLn, stderr)
 
 peopleUrl :: String
 peopleUrl = "https://people.googleapis.com/v1/people/me/connections"
@@ -27,8 +28,8 @@ getConnections accessToken = do
 
   response <- httpLbs request manager
   let body = responseBody response
-  print "----------------------------------------------------------------------"
-  print $ "Making request to get connections to: " ++ peopleUrl
-  print $ "Response status code: " ++ show (statusCode $ responseStatus response)
-  print $ "Response body:" ++ show body
+  hPutStrLn stderr "----------------------------------------------------------------------"
+  hPutStrLn stderr $ "Making request to get connections to: " ++ peopleUrl
+  hPutStrLn stderr $ "Response status code: " ++ show (statusCode $ responseStatus response)
+  hPutStrLn stderr $ "Response body:" ++ show body
   return (eitherDecode body :: Either String ConnectionsResponse)

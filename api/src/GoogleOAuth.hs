@@ -13,6 +13,7 @@ import Network.HTTP.Types.Status (statusCode)
 import NewAccessTokenResponse (NewAccessTokenResponse)
 import RefreshTokenResponse (RefreshTokenResponse)
 import System.Environment (getEnv)
+import System.IO (hPutStrLn, stderr)
 
 oauthUrl :: String
 oauthUrl = "https://oauth2.googleapis.com/token"
@@ -52,10 +53,10 @@ getRefreshToken code = do
 
   response <- httpLbs request manager
   let body = responseBody response
-  print "----------------------------------------------------------------------"
-  print $ "Making request for refresh token to: " ++ oauthUrl
-  print $ "Response status code: " ++ show (statusCode $ responseStatus response)
-  print $ "Response body:" ++ show body
+  hPutStrLn stderr "----------------------------------------------------------------------"
+  hPutStrLn stderr $ "Making request for refresh token to: " ++ oauthUrl
+  hPutStrLn stderr $ "Response status code: " ++ show (statusCode $ responseStatus response)
+  hPutStrLn stderr $ "Response body:" ++ show body
   return (eitherDecode body :: Either String RefreshTokenResponse)
 
 getNewAccessToken :: String -> IO (Either String NewAccessTokenResponse)
@@ -80,10 +81,10 @@ getNewAccessToken oauthRefreshToken = do
 
   response <- httpLbs request manager
   let body = responseBody response
-  print "----------------------------------------------------------------------"
-  print $ "Making request to refresh oauth token to: " ++ oauthUrl
-  print $ "Response status code: " ++ show (statusCode $ responseStatus response)
-  print $ "Response body:" ++ show body
+  hPutStrLn stderr "----------------------------------------------------------------------"
+  hPutStrLn stderr $ "Making request to refresh oauth token to: " ++ oauthUrl
+  hPutStrLn stderr $ "Response status code: " ++ show (statusCode $ responseStatus response)
+  hPutStrLn stderr $ "Response body:" ++ show body
   return (eitherDecode body :: Either String NewAccessTokenResponse)
 
 getJwkKeys :: () -> IO (Either String JwkSet)
@@ -93,8 +94,8 @@ getJwkKeys _ = do
   let request = initialRequest {method = "GET", requestHeaders = [("Content-Type", "application/json; charset=utf-8")]}
   response <- httpLbs request manager
   let body = responseBody response
-  print "----------------------------------------------------------------------"
-  print $ "Making request to refresh oauth token to: " ++ jwkKeysUrl
-  print $ "Response status code: " ++ show (statusCode $ responseStatus response)
-  print $ "Response body:" ++ show body
+  hPutStrLn stderr "----------------------------------------------------------------------"
+  hPutStrLn stderr $ "Making request to get JWK keys: " ++ jwkKeysUrl
+  hPutStrLn stderr $ "Response status code: " ++ show (statusCode $ responseStatus response)
+  hPutStrLn stderr $ "Response body:" ++ show body
   return (eitherDecode body :: Either String JwkSet)
