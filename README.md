@@ -19,9 +19,9 @@ to be notified via a daily email about their Google Contact's birthdays.
 
 ## TODO
 
-- General clean-up to make things not haphazard
-- Figure out "safe" postgres operations
 - Figure out "safe" HTTP operations
+- Figure out "safe" postgres operations
+- General clean-up to make things not haphazard
 - Figure out "safe" ENV access
 - Any other remaing TODO's
 - verify Google Oauth JWT explicitly (https://developers.google.com/identity/protocols/oauth2/openid-connect#validatinganidtoken)

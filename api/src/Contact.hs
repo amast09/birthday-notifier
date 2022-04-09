@@ -30,8 +30,8 @@ headFromMaybeList maybeList = maybeList >>= maybeHead
 
 connectionToContact :: CR.Connection -> Maybe Contact
 connectionToContact c =
-  let maybeName = (headFromMaybeList $ names c) >>= CR.displayName
-      maybeBirthday = (headFromMaybeList $ birthdays c) >>= CR.date
+  let maybeName = headFromMaybeList (names c) >>= CR.displayName
+      maybeBirthday = headFromMaybeList (birthdays c) >>= CR.date
    in liftA2 makeContact maybeName maybeBirthday
 
 foldConn :: [Contact] -> Maybe Contact -> [Contact]
@@ -54,4 +54,7 @@ createBirthdayEmailMessage _ [] = Nothing
 createBirthdayEmailMessage today cs =
   let contactsWithBirthdaysToday = filter (isContactsBirthday today) cs
       birthdayNames = fmap name contactsWithBirthdaysToday
-   in Just $ unlines birthdayNames
+      birthdayMessage = case birthdayNames of
+                           [] -> Nothing
+                           bns -> Just $ unlines bns
+   in birthdayMessage
